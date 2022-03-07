@@ -10,6 +10,7 @@ use Simtabi\Lacommerce\Generators\Concerns\TicketNumber\TicketNumberConfigs;
 use Simtabi\Lacommerce\Generators\Contracts\SkuGeneratorInterface;
 use Simtabi\Lacommerce\Generators\Contracts\TicketNumberGeneratorInterface;
 use Simtabi\Lacommerce\Generators\Contracts\OrderNumberGeneratorInterface;
+use Simtabi\Lacommerce\Supports\Helpers;
 
 class LacommerceServiceProvider extends ServiceProvider
 {
@@ -135,33 +136,14 @@ class LacommerceServiceProvider extends ServiceProvider
             $source    = Str::limit($source, 3, '');
             // Add prefix @todo
 
-            // signature
-            $signature = str_shuffle(str_repeat(str_pad('0123456789', 10, rand(0, 9).rand(0, 9), STR_PAD_LEFT), 2));
-            // Sanitize the signature
-            $signature = substr($signature, 0, 10);
-            // Implode with random
-            $result    = !empty($prefix) ? implode($separator, [$prefix, $source, $signature]) : implode($separator, [$source, $signature]);
-            // Uppercase it
-            return Str::upper($result);
+            return Helpers::makeRandomString($source, $separator);
         });
 
-        Str::macro('orderNumber', function (string $source, ?string $separator = null, ?string $prefix = null) use ($defSeparator){
+        Str::macro('orderNumber', function (?string $source, ?string $separator = null, ?string $prefix = null) use ($defSeparator){
             $separator = $separator ?: $defSeparator;
-            $source    = 'ORD' . $source;
+            $source    = !empty($prefix) ? $prefix: 'ORD';
 
-            // Clean up the source
-            $source = Str::studly($source);
-            // Limit the source
-            $source = Str::limit($source, 3, '');
-
-            // signature
-            $signature = str_shuffle(str_repeat(str_pad('0123456789', 10, rand(0, 9).rand(0, 9), STR_PAD_LEFT), 2));
-            // Sanitize the signature
-            $signature = substr($signature, 0, 10);
-            // Implode with random
-            $result    = !empty($prefix) ? implode($separator, [$prefix, $source, $signature]) : implode($separator, [$source, $signature]);
-            // Uppercase it
-            return Str::upper($result);
+            return Helpers::makeRandomString($source, $separator);
         });
 
         Str::macro('ticketNumber', function (string $source, ?string $separator = null, ?string $prefix = null) use ($defSeparator){
@@ -170,14 +152,8 @@ class LacommerceServiceProvider extends ServiceProvider
             $source    = Str::studly($source);
             // Limit the source
             $source    = Str::limit($source, 3, '');
-            // signature
-            $signature = str_shuffle(str_repeat(str_pad('0123456789', 10, rand(0, 9).rand(0, 9), STR_PAD_LEFT), 2));
-            // Sanitize the signature
-            $signature = substr($signature, 0, 10);
-            // Implode with random
-            $result    = !empty($prefix) ? implode($separator, [$prefix, $source, $signature]) : implode($separator, [$source, $signature]);
-            // Uppercase it
-            return Str::upper($result);
+
+            return Helpers::makeRandomString($source, $separator);
         });
 
     }

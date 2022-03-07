@@ -29,7 +29,7 @@ trait HasOrderNumber
     }
 
     /**
-     * Fetch SKU Config.
+     * Fetch OrderNumber Config.
      *
      * @param  string  $key
      * @return mixed
