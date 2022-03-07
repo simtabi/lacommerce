@@ -147,15 +147,12 @@ class LacommerceServiceProvider extends ServiceProvider
 
         Str::macro('orderNumber', function (string $source, ?string $separator = null, ?string $prefix = null) use ($defSeparator){
             $separator = $separator ?: $defSeparator;
-            if (!empty($source))
-            {
-                // Clean up the source
-                $source = Str::studly($source);
-                // Limit the source
-                $source = Str::limit($source, 3, '');
-            }else{
-                $source = 'ORD';
-            }
+            $source    = 'ORD' . $source;
+
+            // Clean up the source
+            $source = Str::studly($source);
+            // Limit the source
+            $source = Str::limit($source, 3, '');
 
             // signature
             $signature = str_shuffle(str_repeat(str_pad('0123456789', 10, rand(0, 9).rand(0, 9), STR_PAD_LEFT), 2));
