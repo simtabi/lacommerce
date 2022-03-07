@@ -1,0 +1,48 @@
+{
+    "name": "simtabi/lacommerce",
+    "description": "A collection handy helper functions for your laravel ecommerce projects",
+    "keywords": [
+        "simtabi",
+        "eloquent",
+        "laravel",
+        "sku"
+    ],
+    "homepage": "https://github.com/simtabi/lacommerce",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Imani Manyara",
+            "email": "imani@simtabi.com",
+            "homepage": "https://github.com/simtabi",
+            "role": "Developer"
+        }
+    ],
+    "require": {
+        "php": "^7.2|^8.0",
+        "illuminate/support": "~5.6|^6.0|^7.0|^8.0"
+    },
+    "require-dev": {
+        "orchestra/testbench": "^3.6|^4.0|^5.0|^6.0",
+        "phpunit/phpunit": "^7.0|^8.2|^9.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Simtabi\\Lacommerce\\": "src"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Simtabi\\Lacommerce\\Tests\\": "tests"
+        }
+    },
+    "config": {
+        "sort-packages": true
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Simtabi\\Lacommerce\\LacommerceServiceProvider"
+            ]
+        }
+    }
+}
