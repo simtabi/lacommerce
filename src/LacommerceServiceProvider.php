@@ -15,7 +15,8 @@ use Simtabi\Lacommerce\Supports\Helpers;
 class LacommerceServiceProvider extends ServiceProvider
 {
 
-    public const PATH = __DIR__ . '/../';
+    private string $packageName = 'lacommerce';
+    private const  PACKAGE_PATH = __DIR__ . '/../';
 
     /**
      * Register application services.
@@ -24,7 +25,12 @@ class LacommerceServiceProvider extends ServiceProvider
      */
     public function register()
     {
-        $this->mergeConfigFrom(self::PATH . 'config/lacommerce.php', 'lacommerce');
+        $this->mergeConfigFrom(self::PACKAGE_PATH . 'config/lacommerce.php', 'lacommerce');
+        $this->loadTranslationsFrom(self::PACKAGE_PATH . "resources/lang/", $this->packageName);
+        $this->loadMigrationsFrom(self::PACKAGE_PATH.'/../database/migrations');
+        $this->loadViewsFrom(self::PACKAGE_PATH . "resources/views", $this->packageName);
+        $this->mergeConfigFrom(self::PACKAGE_PATH . "config/{$this->packageName}.php", $this->packageName);
+
     }
 
     /**
@@ -46,21 +52,28 @@ class LacommerceServiceProvider extends ServiceProvider
         $this->registerStrMacros();
     }
 
-    private function registerConsoles()
+    private function registerConsoles(): static
     {
-        if ($this->app->runningInConsole()) {
+        if ($this->app->runningInConsole())
+        {
             $this->publishes([
-                self::PATH . 'config/lacommerce.php'   => config_path('lacommerce.php'),
-            ], 'lacommerce:config');
+                self::PACKAGE_PATH . "config/{$this->packageName}.php" => config_path("{$this->packageName}.php"),
+            ], "{$this->packageName}:config");
 
             $this->publishes([
-                self::PATH . 'resources/assets/media'  => public_path('vendor/lacommerce'),
-            ], 'lacommerce:assets');
+                self::PACKAGE_PATH . "public"                          => public_path("vendor/{$this->packageName}"),
+            ], "{$this->packageName}:assets");
 
             $this->publishes([
-                self::PATH . 'resources/views'         => resource_path('views/vendor/lacommerce'),
-            ], 'lacommerce:views');
+                self::PACKAGE_PATH . "resources/views"                 => resource_path("views/vendor/{$this->packageName}"),
+            ], "{$this->packageName}:views");
+
+            $this->publishes([
+                self::PACKAGE_PATH . "resources/lang"                  => $this->app->langPath("vendor/{$this->packageName}"),
+            ], "{$this->packageName}:translations");
         }
+
+        return $this;
     }
 
     /**
