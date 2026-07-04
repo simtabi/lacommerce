@@ -1,140 +1,34 @@
-# Lacommerce — A collection handy helper functions for your laravel ecommerce projects
+# simtabi/lacommerce
 
+[![Latest version on Packagist](https://img.shields.io/packagist/v/simtabi/lacommerce.svg)](https://packagist.org/packages/simtabi/lacommerce)
+[![Tests](https://github.com/laranail/lacommerce/actions/workflows/laravel.yml/badge.svg)](https://github.com/laranail/lacommerce/actions/workflows/laravel.yml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE.md)
 
-- ### SKU generator
+> Handy helper generators for Laravel e-commerce projects — auto-generate unique SKUs, order numbers, and
+> ticket numbers on your Eloquent models.
 
-Generate unique SKUs when saving any Eloquent model with support for Laravel 8 and above.
+`simtabi/lacommerce` adds three sequence generators, each enabled by a trait and produced automatically on
+save:
 
-```php
-$model       = new EloquentModel();
-$model->name = 'Laravel is Awesome';
-$model->save();
+- **SKU** — `HasSku` → an `sku` column.
+- **Order number** — `HasOrderNumber` → an `order_number` column.
+- **Ticket number** — `HasTicketNumber` → a `ticket_number` column.
 
-echo $model->sku; // outputs "LAR-80564492"
-```
+Each is configurable globally or per model, and fully replaceable with a custom generator. Compatible with
+PHP `^8.0`.
 
-Package will add a new method to Laravel's `Illuminate\Support\Str::sku()` class to generate an SKU for you.
-
-## Installation
-
-You can install the package via composer:
+## Install
 
 ```bash
 composer require simtabi/lacommerce
-```
-
-The service provider will automatically register itself.
-
-You can publish the config file with:
-```bash
-# publish config files
 php artisan vendor:publish --tag=lacommerce:config
-
-# publish assets
-php artisan vendor:publish --tag=lacommerce:assets
-
-# publish view files
-php artisan vendor:publish --tag=lacommerce:views
 ```
 
-This is the contents of the config file that will be published at `config/lacommerce.php`:
+See [Installation](docs/installation.md).
+
+## Quick start
 
 ```php
-
-use Simtabi\Lacommerce\Sequencing\Concerns\SkuGenerator;
-use Simtabi\Lacommerce\Sequencing\Concerns\TicketNumberGenerator;
-use Simtabi\Lacommerce\Sequencing\Concerns\OrderNumberGenerator;
-
-return [
-    /*
-    |--------------------------------------------------------------------------
-    | Generator settings
-    |--------------------------------------------------------------------------
-    |
-    */
-
-    'generator' => [
-        'default' => [
-
-            /** Separator */
-            'separator'          => '-',
-
-            /** Enforce generated values to be unique */
-            'unique'             => true,
-
-            /** Generate on create */
-            'generate_on_create' => true,
-
-            /** Refresh on update */
-            'refresh_on_update'  => true,
-
-        ],
-
-        /*
-        |--------------------------------------------------------------------------
-        | SKU Generator
-        |--------------------------------------------------------------------------
-        |
-        */
-        'sku'           => [
-            /** Generator and must @implements GeneratorInterface */
-            'generator'   => SkuGenerator::class,
-
-            /** Source field(column) */
-            'source'      => 'name',
-
-            /** Destination field(column) */
-            'destination' => 'sku',
-        ],
-
-        /*
-        |--------------------------------------------------------------------------
-        | TicketNumber Generator
-        |--------------------------------------------------------------------------
-        |
-        */
-        'ticket_number' => [
-            /** Generator and must @implements GeneratorInterface */
-            'generator'   => TicketNumberGenerator::class,
-
-            /** Source field(column) */
-            'source'      => 'name',
-
-            /** Destination field(column) */
-            'destination' => 'ticket_number',
-        ],
-
-        /*
-        |--------------------------------------------------------------------------
-        | OrderNumber Generator
-        |--------------------------------------------------------------------------
-        |
-        */
-        'order_number'  => [
-            /** Generator and must @implements GeneratorInterface */
-            'generator'   => OrderNumberGenerator::class,
-
-            /** Source field(column) */
-            'source'      => 'name',
-
-            /** Destination field(column) */
-            'destination' => 'order_number',
-        ],
-    ],
-
-];
-
-```
-
-Please note that the above set up expects you have an `sku` field in your model. If you plan to manually overwrite the values, please make sure to add this field to `fillable` array;
-
-### Usage
-
-Add `Simtabi\Lacommerce\Traits\HasSku` trait to your model. That's it!
-
-```php
-namespace App;
-
 use Simtabi\Lacommerce\Traits\HasSku;
 use Illuminate\Database\Eloquent\Model;
 
@@ -142,111 +36,65 @@ class Product extends Model
 {
     use HasSku;
 }
+
+$product = new Product();
+$product->name = 'Laravel is Awesome';
+$product->save();
+
+echo $product->sku; // "LAR-80564492"
 ```
 
-Behind the scenes this will register an observer for the `sku` field, which will be generated every time you save the model.
+Full walkthrough: [Getting started](docs/getting-started.md).
 
-## Advanced usage
+## <a name="documentation"></a>Documentation
 
-If you want to change settings for a specific model, you can overload the `skuConfigs`() method:
+Hosted at [`opensource.simtabi.com/lacommerce/docs/`](https://opensource.simtabi.com/lacommerce/docs/). The
+same pages live under [`docs/`](docs/):
 
-```php
-namespace App;
+### Guides
 
-use Simtabi\Lacommerce\Generators\Concerns\Sku\SkuConfigs;
-use Simtabi\Lacommerce\Traits\HasSku;
-use Illuminate\Database\Eloquent\Model;
+- [Installation](docs/installation.md) — install, publish, requirements.
+- [Getting started](docs/getting-started.md) — generate your first SKU.
+- [Configuration](docs/configuration.md) — every `config/lacommerce.php` key.
+- [Architecture](docs/architecture.md) — traits, observer, generator, configs.
 
-class Product extends Model
-{
-    use HasSku;
+### Reference
 
-    /**
-     * Get the options for generating the Sku.
-     *
-     * @return SkuConfigs
-     */
-    public function skuConfigs() : SkuConfigs
-    {
-        return SkuConfigs::make()
-            ->setSourceColumn(['id', 'user_id'])
-            ->setDestinationColumn('order_number')
-            ->setSeparator('-')
-            ->forceUnique(true)
-            ->generateOnCreate(true)
-            ->refreshOnUpdate(false);
-    }
-}
-```
+- [Generators](docs/tools/generators.md) — SKU / order-number / ticket-number generators, per-model config, custom generators.
 
-### Custom Generator
+### Project
 
-Assuming you want some extra logic, like having a default value, or defining prefix for an SKU,
-you can implement your own SkuGenerator. It is easiest to extend the base class, but you are free to explore any which way.
+- [Changelog](CHANGELOG.md) — release history.
 
-First, create a custom class:
+## Stability
 
-```php
+Pre-1.0 (0.x) — the public API may change between minor versions. Pin a version before bumping.
 
-namespace App\Components\SkuGenerator;
-
-use Simtabi\Lacommerce\Generators\Concerns\Sku\SkuGenerator;
-
-class CustomSkuGenerator extends SkuGenerator
-{
-    /**
-     * Get the source fields for the SKU.
-     *
-     * @return string
-     */
-    protected function getSourceString(): string
-    {
-        // fetch the source fields
-        $source = $this->configs->source;
-        // Fetch fields from model, skip empty
-        $fields = array_filter($this->model->only($source));
-        // Fetch fields from the model, if empty, use custom logic to resolve
-        if (empty($fields)) {
-            return 'some-random-value-logic';
-        }
-        // Implode with a separator
-        return implode($this->configs->separator, $fields);
-    }
-}
-```
-
-and then update `generator` config value:
-
-```php
-    'generator' => \App\Components\SkuGenerator\CustomSkuGenerator::class,
-```
-
-You can also opt out to change implementation completely;
-just remember that custom generator must implement `Simtabi\Lacommerce\SKU\Contracts\SkuGenerator`.
-
-### About SKUs
-
-[Stock Keeping Unit](https://en.wikipedia.org/wiki/Stock_keeping_unit) allows you to set a unique identifier or code that refers to the particular stock keeping unit.
-
-## Changelog
-
-Please see [CHANGELOG](CHANGELOG.md) for more information about what has changed recently.
-
-## Testing
+## Local development
 
 ```bash
-composer test
+composer install
+composer test     # run the test suite
 ```
 
-## Contributing
+## Sister packages
 
-Please see [CONTRIBUTING](CONTRIBUTING.md) for details.
+- [`laranail/toolkit`](https://github.com/laranail/toolkit) — the broader Laravel utility toolkit.
+- [`laranail/enumerator`](https://github.com/laranail/enumerator) — strongly-typed enums.
+
+## Community
+
+- [Issues](https://github.com/laranail/lacommerce/issues) — bugs + feature requests.
+
+## Contributing & security
+
+- [CONTRIBUTING.md](CONTRIBUTING.md) — workflow + coding standards.
 
 ## Credits
 
-- [Cyrill Kalita](https://github.com/binary-cats)
-- [All Contributors](../../contributors)
+The SKU-generation approach builds on [Cyrill Kalita / binary-cats](https://github.com/binary-cats)' work,
+plus [all contributors](https://github.com/laranail/lacommerce/contributors).
 
 ## License
 
-The MIT License (MIT). Please see [License File](LICENSE.md) for more information.
+MIT © Simtabi LLC. See [LICENSE.md](LICENSE.md).
