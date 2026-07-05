@@ -1,7 +1,7 @@
 # Generators
 
 The three sequence generators — SKU, order number, and ticket number — and how to configure, scope, and
-replace them. See the [Documentation index](../README.md#documentation).
+replace them. See the [Documentation index](../../README.md#documentation).
 
 ## The three generators
 
