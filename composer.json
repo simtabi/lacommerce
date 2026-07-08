@@ -7,7 +7,10 @@
         "laravel",
         "sku"
     ],
-    "homepage": "https://opensource.simtabi.com/documentation/laranail/lacommerce/",
+    "homepage": "https://opensource.simtabi.com/products/laranail/lacommerce",
+    "support": {
+        "docs": "https://opensource.simtabi.com/documentation/laranail/lacommerce/"
+    },
     "license": "MIT",
     "authors": [
         {
