@@ -1,6 +1,6 @@
 <?php
 
-namespace Simtabi\Lacommerce;
+namespace Simtabi\Lacommerce\Providers;
 
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
@@ -16,7 +16,7 @@ class LacommerceServiceProvider extends ServiceProvider
 {
 
     private string $packageName = 'lacommerce';
-    private const  PACKAGE_PATH = __DIR__ . '/../';
+    private const  PACKAGE_PATH = __DIR__ . '/../../';
 
     /**
      * Register application services.

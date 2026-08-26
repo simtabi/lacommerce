@@ -43,7 +43,7 @@
     "extra": {
         "laravel": {
             "providers": [
-                "Simtabi\\Lacommerce\\LacommerceServiceProvider"
+                "Simtabi\\Lacommerce\\Providers\\LacommerceServiceProvider"
             ]
         }
     }
