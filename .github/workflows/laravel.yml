@@ -1,15 +1,18 @@
 name: Laravel
 
 on:
-  push:
-    branches: [ master ]
   pull_request:
     branches: [ master ]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   laravel-tests:
 
     runs-on: ubuntu-latest
+    timeout-minutes: 15
 
     steps:
     - uses: actions/checkout@0717577d45739eb3c851188b29f50ed6c0b2194e # v2
