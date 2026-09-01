@@ -2,7 +2,7 @@
 
 [![Latest version on Packagist](https://img.shields.io/packagist/v/simtabi/lacommerce.svg)](https://packagist.org/packages/simtabi/lacommerce)
 [![Tests](https://github.com/laranail/lacommerce/actions/workflows/laravel.yml/badge.svg)](https://github.com/laranail/lacommerce/actions/workflows/laravel.yml)
-[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE.md)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
 > Handy helper generators for Laravel e-commerce projects — auto-generate unique SKUs, order numbers, and ticket numbers on your Eloquent models via the `HasSku`, `HasOrderNumber`, and `HasTicketNumber` traits, each configurable globally or per model and fully replaceable.
 
@@ -31,4 +31,4 @@ Issues and PRs are welcome — see [CONTRIBUTING.md](CONTRIBUTING.md). Report vu
 
 ## License
 
-MIT © Simtabi LLC. See [LICENSE.md](LICENSE.md).
+MIT © Simtabi LLC. See [LICENSE](LICENSE).
