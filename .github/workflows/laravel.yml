@@ -1,27 +1,36 @@
-name: Laravel
+name: Checks
 
+# lacommerce has no test suite yet, so there is nothing for PHPUnit to run. This gates what can
+# be checked without one: a valid composer.json, and every PHP file parsing. When tests land,
+# add a Testbench job here and it becomes a required check through the org's ruleset script.
 on:
   pull_request:
-    branches: [ master ]
+    branches: [master]
+  workflow_dispatch:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+permissions:
+  contents: read
+
 jobs:
-  laravel-tests:
-
+  checks:
+    name: Composer validate · PHP syntax
     runs-on: ubuntu-latest
-    timeout-minutes: 15
-
+    timeout-minutes: 10
     steps:
-    - uses: actions/checkout@0717577d45739eb3c851188b29f50ed6c0b2194e # v2
-    - name: Copy .env
-      run: php -r "file_exists('.env') || copy('.env.example', '.env');"
-    - name: Install Dependencies
-      run: composer install -q --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist
-    - name: Execute tests (Unit and Feature tests) via PHPUnit
-      env:
-        DB_CONNECTION: sqlite
-        DB_DATABASE: database/database.sqlite
-      run: vendor/bin/phpunit
+      - uses: actions/checkout@v7
+
+      - uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # 2.37.2
+        with:
+          php-version: '8.4'
+          coverage: none
+          tools: composer
+
+      - name: Validate composer.json
+        run: composer validate --no-check-publish --no-check-lock
+
+      - name: Check PHP syntax
+        run: find src config database -name '*.php' -print0 | xargs -0 -n1 php -l
