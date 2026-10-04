@@ -2,6 +2,7 @@
 
 namespace Simtabi\Lacommerce\Providers;
 
+use Illuminate\Contracts\Foundation\CachesConfiguration;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
 use Simtabi\Lacommerce\Generators\Concerns\OrderNumber\OrderNumberConfigs;
@@ -15,7 +16,37 @@ use Simtabi\Lacommerce\Supports\Helpers;
 class LacommerceServiceProvider extends ServiceProvider
 {
 
-    private string $packageName = 'lacommerce';
+    /**
+     * Vendor-scoped config key. Published to config/simtabi/lacommerce.php.
+     */
+    public const CONFIG_KEY = 'simtabi.lacommerce';
+
+    /**
+     * Vendor-scoped publish tag for the config file.
+     */
+    public const CONFIG_TAG = 'simtabi::lacommerce-config';
+
+    /**
+     * Vendor-scoped view and translation namespace.
+     */
+    public const VIEW_NAMESPACE = 'simtabi/lacommerce';
+
+    /**
+     * Bare config key used before 0.1.0.
+     *
+     * @deprecated Since 0.1.0; use CONFIG_KEY (`simtabi.lacommerce`). Still populated and a
+     *             published config/lacommerce.php is still honoured. Earliest removal: 0.2.0.
+     */
+    public const LEGACY_CONFIG_KEY = 'lacommerce';
+
+    /**
+     * Bare publish tag used before 0.1.0.
+     *
+     * @deprecated Since 0.1.0; use CONFIG_TAG (`simtabi::lacommerce-config`). Still registered and
+     *             still publishes config/lacommerce.php. Earliest removal: 0.2.0.
+     */
+    public const LEGACY_CONFIG_TAG = 'lacommerce:config';
+
     private const  PACKAGE_PATH = __DIR__ . '/../../';
 
     /**
@@ -25,11 +56,41 @@ class LacommerceServiceProvider extends ServiceProvider
      */
     public function register()
     {
-        $this->mergeConfigFrom(self::PACKAGE_PATH . 'config/config.php', $this->packageName);
-        $this->loadTranslationsFrom(self::PACKAGE_PATH . "resources/lang/", $this->packageName);
-        $this->loadMigrationsFrom(self::PACKAGE_PATH.'database/migrations');
-        $this->loadViewsFrom(self::PACKAGE_PATH . "resources/views", $this->packageName);
-        $this->mergeConfigFrom(self::PACKAGE_PATH . "config/config.php", $this->packageName);
+        $this->registerConfig();
+
+        if (is_dir($path = self::PACKAGE_PATH . 'resources/lang')) {
+            $this->loadTranslationsFrom($path, self::VIEW_NAMESPACE);
+        }
+
+        if (is_dir($path = self::PACKAGE_PATH . 'resources/views')) {
+            $this->loadViewsFrom($path, self::VIEW_NAMESPACE);
+        }
+    }
+
+    /**
+     * Merge the package defaults into the vendor-scoped key, honouring a config file published
+     * under the deprecated bare key, and mirror the result to that bare key so existing
+     * `config('lacommerce.*')` reads keep working.
+     *
+     * Precedence, lowest to highest: package defaults, config/lacommerce.php (deprecated),
+     * config/simtabi/lacommerce.php. The merge is shallow, as mergeConfigFrom() is.
+     */
+    private function registerConfig(): void
+    {
+        if ($this->app instanceof CachesConfiguration && $this->app->configurationIsCached()) {
+            return;
+        }
+
+        $config = $this->app->make('config');
+
+        $merged = array_merge(
+            require self::PACKAGE_PATH . 'config/config.php',
+            (array) $config->get(self::LEGACY_CONFIG_KEY, []),
+            (array) $config->get(self::CONFIG_KEY, []),
+        );
+
+        $config->set(self::CONFIG_KEY, $merged);
+        $config->set(self::LEGACY_CONFIG_KEY, $merged);
     }
 
     /**
@@ -55,21 +116,31 @@ class LacommerceServiceProvider extends ServiceProvider
     {
         if ($this->app->runningInConsole())
         {
+            // Laravel keys a provider's publishable paths by source path, so two tags naming the
+            // same source string would share one target and the later one would win. The two
+            // spellings below name the same file but are distinct keys.
             $this->publishes([
-                self::PACKAGE_PATH . "config/config.php"               => config_path("{$this->packageName}.php"),
-            ], "{$this->packageName}:config");
+                dirname(__DIR__, 2) . '/config/config.php' => config_path('simtabi/lacommerce.php'),
+            ], self::CONFIG_TAG);
 
+            // Deprecated bare tag, kept so existing install instructions still work.
             $this->publishes([
-                self::PACKAGE_PATH . "public"                          => public_path("vendor/{$this->packageName}"),
-            ], "{$this->packageName}:assets");
+                self::PACKAGE_PATH . 'config/config.php' => config_path(self::LEGACY_CONFIG_KEY . '.php'),
+            ], self::LEGACY_CONFIG_TAG);
 
-            $this->publishes([
-                self::PACKAGE_PATH . "resources/views"                 => resource_path("views/vendor/{$this->packageName}"),
-            ], "{$this->packageName}:views");
+            // The package ships no public assets, views or translations today. The tags are
+            // registered only when the directory exists, so they never point at nothing.
+            $optional = [
+                'public'          => [public_path('vendor/simtabi/lacommerce'), 'simtabi::lacommerce-assets'],
+                'resources/views' => [resource_path('views/vendor/simtabi/lacommerce'), 'simtabi::lacommerce-views'],
+                'resources/lang'  => [$this->app->langPath('vendor/simtabi/lacommerce'), 'simtabi::lacommerce-translations'],
+            ];
 
-            $this->publishes([
-                self::PACKAGE_PATH . "resources/lang"                  => $this->app->langPath("vendor/{$this->packageName}"),
-            ], "{$this->packageName}:translations");
+            foreach ($optional as $source => [$target, $tag]) {
+                if (is_dir(self::PACKAGE_PATH . $source)) {
+                    $this->publishes([self::PACKAGE_PATH . $source => $target], $tag);
+                }
+            }
         }
 
         return $this;
@@ -108,7 +179,7 @@ class LacommerceServiceProvider extends ServiceProvider
     {
         $config = $this->app->make('config');
 
-        return $config->get('lacommerce.generator', []);
+        return $config->get(self::CONFIG_KEY . '.generator', []);
     }
 
     /**
@@ -138,7 +209,7 @@ class LacommerceServiceProvider extends ServiceProvider
     private function registerStrMacros()
     {
 
-        $defSeparator = config('lacommerce.generator.default.separator', '-');
+        $defSeparator = config(self::CONFIG_KEY . '.generator.default.separator', '-');
 
         Str::macro('sku', function (string $source, ?string $separator = null, ?string $prefix = null) use ($defSeparator){
             $separator = $separator ?: $defSeparator;
