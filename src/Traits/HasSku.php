@@ -2,6 +2,7 @@
 
 namespace Simtabi\Lacommerce\Traits;
 
+use Illuminate\Database\Eloquent\Model;
 use Simtabi\Lacommerce\Generators\Concerns\Sku\SkuConfigs;
 use Simtabi\Lacommerce\Generators\Concerns\Sku\SkuObserver;
 
@@ -9,13 +10,17 @@ trait HasSku
 {
 
     /**
-     * Boot the trait by adding observers.
+     * Boot the trait by registering the observer's model events.
+     *
+     * The listeners are registered directly rather than through static::observe(), which
+     * instantiates the model and therefore throws while the model is still booting.
      *
      * @return void
      */
     public static function bootHasSku()
     {
-        static::observe(SkuObserver::class);
+        static::creating(static fn (Model $model) => resolve(SkuObserver::class)->creating($model));
+        static::updating(static fn (Model $model) => resolve(SkuObserver::class)->updating($model));
     }
 
     /**
