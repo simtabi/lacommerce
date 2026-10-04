@@ -4,8 +4,8 @@ Install `simtabi/lacommerce` and publish its config. See the [Documentation inde
 
 ## Requirements
 
-- PHP `^8.0`
-- Laravel (the `LacommerceServiceProvider` is auto-discovered)
+- PHP `^8.4.1 || ^8.5`
+- Laravel 12 or 13 (the `LacommerceServiceProvider` is auto-discovered)
 
 ## Install
 
@@ -13,15 +13,16 @@ Install `simtabi/lacommerce` and publish its config. See the [Documentation inde
 composer require simtabi/lacommerce
 ```
 
-The service provider registers itself. Publish the config (and optionally assets/views):
+The service provider registers itself. Publish the config if you want to change the defaults:
 
 ```bash
-php artisan vendor:publish --tag=lacommerce:config
-php artisan vendor:publish --tag=lacommerce:assets
-php artisan vendor:publish --tag=lacommerce:views
+php artisan vendor:publish --tag=simtabi::lacommerce-config
 ```
 
-This publishes `config/lacommerce.php` — see [Configuration](configuration.md).
+This publishes `config/simtabi/lacommerce.php` — see [Configuration](configuration.md). The package ships
+no views, translations or public assets, so there is nothing else to publish.
+
+The package runs no migrations of its own: add the destination column to your own table.
 
 > Your model needs the destination column (e.g. `sku`) on its table. If you overwrite generated values
 > manually, add that column to the model's `$fillable`.
