@@ -7,8 +7,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
-Preparing the first tagged release. An entry dated 2022-02-03 used to sit here as `0.1.0`, but no tag was
-ever cut for it and the package was never published.
+## [0.1.0] - 2026-10-05
+
+The first tagged release. An entry dated 2022-02-03 used to sit here as `0.1.0`, but no tag was ever
+cut for it and the package was never published.
 
 ### Added
 
@@ -40,3 +42,6 @@ ever cut for it and the package was never published.
 - The config was merged twice; it is merged once.
 - View, translation and asset loaders and publish tags pointed at directories the package does not ship;
   they are now registered only when the directory exists.
+
+[Unreleased]: https://github.com/simtabi/lacommerce/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/simtabi/lacommerce/releases/tag/v0.1.0
