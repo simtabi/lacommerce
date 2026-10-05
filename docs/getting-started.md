@@ -6,7 +6,7 @@ Generate your first SKU in three steps. See the [Documentation index](../README.
 
 ```bash
 composer require simtabi/lacommerce
-php artisan vendor:publish --tag=lacommerce:config
+php artisan vendor:publish --tag=simtabi::lacommerce-config
 ```
 
 See [Installation](installation.md).
@@ -32,7 +32,7 @@ $product = new Product();
 $product->name = 'Laravel is Awesome';
 $product->save();
 
-echo $product->sku; // "LAR-80564492"
+echo $product->sku; // "LAR-8056449213"
 ```
 
 Order numbers and ticket numbers work the same way via `HasOrderNumber` / `HasTicketNumber`.
@@ -40,7 +40,7 @@ Order numbers and ticket numbers work the same way via `HasOrderNumber` / `HasTi
 ## Next steps
 
 - [Generators](tools/generators.md) — all three generators, per-model config, custom generators.
-- [Configuration](configuration.md) — every `config/lacommerce.php` key.
+- [Configuration](configuration.md) — every `config/simtabi/lacommerce.php` key.
 
 ---
 

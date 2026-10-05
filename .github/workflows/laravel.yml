@@ -1,8 +1,7 @@
 name: Checks
 
-# lacommerce has no test suite yet, so there is nothing for PHPUnit to run. This gates what can
-# be checked without one: a valid composer.json, and every PHP file parsing. When tests land,
-# add a Testbench job here and it becomes a required check through the org's ruleset script.
+# Fast checks that need no dependencies: a valid composer.json, and every PHP file parsing.
+# The Testbench suite runs in tests.yml.
 on:
   pull_request:
     branches: [master]
@@ -30,7 +29,7 @@ jobs:
           tools: composer
 
       - name: Validate composer.json
-        run: composer validate --no-check-publish --no-check-lock
+        run: composer validate --strict --no-check-publish --no-check-lock
 
       - name: Check PHP syntax
-        run: find src config database -name '*.php' -print0 | xargs -0 -n1 php -l
+        run: find src config tests -name '*.php' -print0 | xargs -0 -n1 php -l

@@ -4,8 +4,8 @@ How a generated value is produced on save. See the [Documentation index](../READ
 
 ## The moving parts
 
-- **Traits** (`Traits/HasSku`, `HasOrderNumber`, `HasTicketNumber`) — added to a model; each boots a model
-  observer for its destination column.
+- **Traits** (`Traits/HasSku`, `HasOrderNumber`, `HasTicketNumber`) — added to a model; each registers its
+  observer's `creating` and `updating` handlers for its destination column.
 - **Observer** (`Generators/Services/Observer`) — hooks the model's create/update events and asks the
   generator for a value.
 - **Generator** (`Generators/Services/Generator` + per-type `Concerns/*Generator`) — builds the value from

@@ -16,6 +16,8 @@ class CreateDummyModelsTable extends Migration
         Schema::create($this->table(), function (Blueprint $table) {
             $table->increments('id');
             $table->string('sku')->index()->nullable();
+            $table->string('order_number')->index()->nullable();
+            $table->string('ticket_number')->index()->nullable();
             $table->string('name');
             $table->timestamps();
         });

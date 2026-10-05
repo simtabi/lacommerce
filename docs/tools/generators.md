@@ -27,10 +27,10 @@ $product = new Product();
 $product->name = 'Laravel is Awesome';
 $product->save();
 
-echo $product->sku; // "LAR-80564492"
+echo $product->sku; // "LAR-8056449213"
 ```
 
-The trait registers an observer for the destination field, generated every time you save the model. If you
+The trait registers model-event listeners for the destination field, generated every time you save the model. If you
 plan to overwrite values manually, add the destination column to the model's `$fillable`.
 
 `Illuminate\Support\Str::sku()` is also registered, so you can generate a value directly.
@@ -74,14 +74,14 @@ class CustomSkuGenerator extends SkuGenerator
 {
     protected function getSourceString(): string
     {
-        $source = $this->configs->source;
+        $source = $this->modelConfig->sourceColumn;
         $fields = array_filter($this->model->only($source));
 
         if (empty($fields)) {
             return 'some-random-value-logic';
         }
 
-        return implode($this->configs->separator, $fields);
+        return implode($this->modelConfig->separator, $fields);
     }
 }
 ```
@@ -92,7 +92,9 @@ Then point the config at it:
 'generator' => \App\Components\SkuGenerator\CustomSkuGenerator::class,
 ```
 
-A custom generator must implement `Simtabi\Lacommerce\SKU\Contracts\SkuGenerator`.
+A custom generator must implement `Simtabi\Lacommerce\Generators\Contracts\SkuGeneratorInterface` (or the
+`OrderNumberGeneratorInterface` / `TicketNumberGeneratorInterface` beside it); extending the shipped generator
+does that for you.
 
 ## About SKUs
 
