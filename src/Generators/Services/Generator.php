@@ -7,6 +7,8 @@ use Illuminate\Contracts\Support\Renderable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 use Simtabi\Lacommerce\Generators\Services\Contracts\GeneratorInterface;
+use Simtabi\Lacommerce\Providers\LacommerceServiceProvider;
+use Simtabi\Lacommerce\Supports\Identifiers;
 
 class Generator implements Jsonable, Renderable, GeneratorInterface
 {
@@ -89,7 +91,7 @@ class Generator implements Jsonable, Renderable, GeneratorInterface
     protected function generate(string $source, string $separator, bool $unique = false): string
     {
         // Make
-        $value = Str::{$this->strMixin}($source, $separator);
+        $value = $this->makeValue($source, $separator);
 
         // if we are forcing uniques, and it already exists, re-try
         if ($unique and $this->exists($value)) {
@@ -97,6 +99,35 @@ class Generator implements Jsonable, Renderable, GeneratorInterface
         }
 
         return $value;
+    }
+
+    /**
+     * Make one candidate value.
+     *
+     * The three shipped generators call Identifiers directly rather than the `Str` macro named by
+     * `$strMixin`: Str's macro registry is a flat, host-owned map, so going through it let any package
+     * or application that registered its own `Str::sku()` replace what every model generated. A
+     * subclass naming any other `$strMixin` still has that macro called, as before.
+     *
+     * An empty separator falls back to the configured default, as the 0.1.0 macros did.
+     *
+     * @param  string  $source
+     * @param  string  $separator
+     * @return string
+     */
+    protected function makeValue(string $source, string $separator): string
+    {
+        $separator = $separator ?: (string) config(
+            LacommerceServiceProvider::CONFIG_KEY . '.generator.default.separator',
+            Identifiers::DEFAULT_SEPARATOR,
+        );
+
+        return match ($this->strMixin) {
+            'sku'          => Identifiers::sku($source, $separator),
+            'orderNumber'  => Identifiers::orderNumber(null, $separator),
+            'ticketNumber' => Identifiers::ticketNumber($source, $separator),
+            default        => Str::{$this->strMixin}($source, $separator),
+        };
     }
 
     /**

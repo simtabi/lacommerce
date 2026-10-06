@@ -9,6 +9,22 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Deprecated bare Str macros
+    |--------------------------------------------------------------------------
+    |
+    | 0.1.0 registered Str::sku(), Str::orderNumber() and Str::ticketNumber().
+    | Those names sit in Str's flat macro registry, where another package or
+    | your application can silently replace them. They still work and are
+    | deprecated: use Simtabi\Lacommerce\Supports\Identifiers, or the scoped
+    | Str::simtabiLacommerceSku() family. Set this to false to stop registering
+    | the bare names and leave them free. Earliest removal: 0.2.0.
+    |
+    */
+
+    'register_legacy_macros' => true,
+
+    /*
+    |--------------------------------------------------------------------------
     | Generator settings
     |--------------------------------------------------------------------------
     |
