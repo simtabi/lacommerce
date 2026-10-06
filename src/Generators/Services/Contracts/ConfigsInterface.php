@@ -5,6 +5,7 @@ namespace Simtabi\Lacommerce\Generators\Services\Contracts;
 /**
  * @property-read string[] $sourceColumn
  * @property-read string $destinationColumn
+ * @property-read ?string $prefix
  * @property-read bool $status
  * @property-read string $separator
  * @property-read bool $generateOnCreate
@@ -36,7 +37,7 @@ interface ConfigsInterface
     /**
      * Set the prefix.
      *
-     * @param mixed $prefix
+     * @param string $prefix
      * @return $this
      */
     public function setPrefix(string $prefix): self;
@@ -49,7 +50,7 @@ interface ConfigsInterface
     /**
      * Set the destination column.
      *
-     * @param  mixed  $destinationColumn
+     * @param  string  $destinationColumn
      * @return $this
      */
     public function setDestinationColumn(string $destinationColumn): self;

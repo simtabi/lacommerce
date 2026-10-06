@@ -24,18 +24,21 @@ return [
             'generator'          => SkuGenerator::class,    // must implement GeneratorInterface
             'source_column'      => 'name',                 // source column(s)
             'destination_column' => 'sku',                  // destination column
+            'prefix'             => null,                   // optional leading part
         ],
 
         'ticket_number' => [
             'generator'          => TicketNumberGenerator::class,
             'source_column'      => 'name',
             'destination_column' => 'ticket_number',
+            'prefix'             => null,
         ],
 
         'order_number' => [
             'generator'          => OrderNumberGenerator::class,
             'source_column'      => 'name',
             'destination_column' => 'order_number',
+            'prefix'             => null,                   // replaces the default ORD
         ],
     ],
 ];
@@ -50,9 +53,10 @@ return [
 | `generator.default.unique` | Enforce the generated value is unique. |
 | `generator.default.generate_on_create` | Generate when the model is created. |
 | `generator.default.refresh_on_update` | Regenerate when the model is updated. |
-| `generator.<name>.generator` | The generator class (must implement its `GeneratorInterface`). |
+| `generator.<name>.generator` | The generator class. Built as `new $class($model)`; it must implement `GeneratorInterface`, or the first save throws `InvalidOptionException`. See [Custom generators](tools/generators.md#custom-generators). |
 | `generator.<name>.source_column` | Source column(s) the value is derived from. |
 | `generator.<name>.destination_column` | Column the generated value is written to. |
+| `generator.<name>.prefix` | Optional leading part of the value (default `null`, none). For `order_number` it replaces `ORD`. A published file without the key behaves as `null`. See [Prefixes](tools/generators.md#prefixes). |
 
 Override any of these per model via the trait's config method — see [Generators](tools/generators.md).
 

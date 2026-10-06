@@ -14,12 +14,27 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Vendor-scoped `Str` macros `Str::simtabiLacommerceSku()`, `Str::simtabiLacommerceOrderNumber()` and
   `Str::simtabiLacommerceTicketNumber()`, taking the same arguments as the bare macros they replace.
 - Config key `register_legacy_macros` (default `true`). Set it to `false` to stop registering the bare macros.
+- Config key `generator.<name>.prefix` (default `null`) on the `sku`, `ticket_number` and `order_number` blocks.
+  When set, it leads every value the trait generates: `ACME-BLU-8056449213`. For order numbers it replaces the
+  default `ORD`. A published config without the key behaves as `null`.
+- An optional `$prefix` third argument on `Identifiers::sku()` and `Identifiers::ticketNumber()`, and on
+  `Supports\Helpers::makeRandomString()`.
+- The shipped `SkuGenerator`, `OrderNumberGenerator` and `TicketNumberGenerator` implement the per-type
+  interface (`SkuGeneratorInterface`, …) the container resolves them through. They extended only the base
+  `GeneratorInterface` before.
 
 ### Changed
 
 - The `HasSku`, `HasOrderNumber` and `HasTicketNumber` generators call `Identifiers` directly instead of the
   bare `Str` macro. A package or application that registers its own `Str::sku()` no longer changes what
   your models generate. A custom generator naming another `$strMixin` still has that macro called.
+- The observer calls `render()` on the generator instead of casting it to a string. Output is unchanged for the
+  shipped generators, whose `__toString()` returned `render()`.
+- A `generator` config key naming a class that does not implement `GeneratorInterface` now throws
+  `InvalidOptionException` naming the key on the first save. It threw a `TypeError` from the observer before.
+- `InvalidOptionException::invalidArgument()` takes an optional `$code` (default `500`), and `render()` takes
+  `Illuminate\Http\Request`. It used to drop the code its one caller passed, leaving `0`, and type-hint the
+  `Request` facade, which a real request never is.
 
 ### Deprecated
 
@@ -27,6 +42,23 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   flat map, so any other registration of those names silently replaces them. They still work, with the
   same arguments and output, forwarding to the scoped macros, and raise one `E_USER_DEPRECATED` per name per
   boot. Earliest removal: 0.2.0.
+
+### Fixed
+
+- `Supports\Helpers::makeRandomString()` read a `$prefix` variable it never declared. The body was moved out of
+  the 0.1.0 `Str` macros in 2022, where `$prefix` was a closure parameter, and the parameter was left behind.
+  `empty()` of an undefined variable raises nothing, so the prefix branch could never run. It is now a third
+  parameter, `?string $prefix = null`. Output for every existing call is unchanged: no caller passed a prefix.
+  A call that does gets `PREFIX-SOURCE-DIGITS`, upper-cased. A prefix of `'0'` is kept; `null` and `''` add
+  nothing.
+- `docs/tools/generators.md` told you to extend `SkuGenerator`, which is final, so its custom-generator example
+  could not compile. It now documents the two seams that work, extending the non-final
+  `Generators\Services\Generator` base or implementing the interface, and both examples are test fixtures run
+  against a model. A test fails if the documented example stops matching its fixture.
+- A custom generator that implemented `GeneratorInterface` without a `__toString()` threw
+  `Object ... could not be converted to string` on every save.
+- `Configs::getPrefix()`, and `skuConfig('prefix')` and its siblings, threw "must not be accessed before
+  initialization" unless `setPrefix()` had been called. The prefix now defaults to `null`.
 
 ## [0.1.0] - 2026-10-05
 

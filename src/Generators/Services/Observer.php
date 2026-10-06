@@ -53,7 +53,7 @@ class Observer
 
         // Set the value
         if ($model->{$this->configMethod}('generateOnCreate')) {
-            $model->setAttribute($destination, (string) $this->generator($model));
+            $model->setAttribute($destination, $this->generator($model)->render());
         }
     }
 
@@ -78,7 +78,7 @@ class Observer
 
         // if we are requested to generate and those fields that are dirty
         if ($model->{$this->configMethod}('refreshOnUpdate') and $model->isDirty($source)) {
-            $model->setAttribute($destination, (string) $this->generator($model));
+            $model->setAttribute($destination, $this->generator($model)->render());
         }
     }
 

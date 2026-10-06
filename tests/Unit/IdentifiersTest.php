@@ -56,4 +56,13 @@ final class IdentifiersTest extends TestCase
         $this->assertSame('-', Identifiers::DEFAULT_SEPARATOR);
         $this->assertSame('ORD', Identifiers::DEFAULT_ORDER_PREFIX);
     }
+
+    #[Test]
+    public function sku_and_ticket_number_take_an_optional_prefix(): void
+    {
+        $this->assertMatchesRegularExpression('/^ACME-LAR-\d{10}$/', Identifiers::sku('laravel', '-', 'acme'));
+        $this->assertMatchesRegularExpression('/^HD_SUP_\d{10}$/', Identifiers::ticketNumber('support', '_', 'hd'));
+        $this->assertMatchesRegularExpression('/^LAR-\d{10}$/', Identifiers::sku('laravel', '-', null));
+        $this->assertMatchesRegularExpression('/^SUP-\d{10}$/', Identifiers::ticketNumber('support', '-', ''));
+    }
 }
