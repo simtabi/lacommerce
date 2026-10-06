@@ -24,11 +24,11 @@ class Configs implements ConfigsInterface
     protected string       $destinationColumn;
 
     /**
-     * Define prefix.
+     * Leading part of the generated value; null for none.
      *
      * @var ?string
      */
-    protected ?string      $prefix;
+    protected ?string      $prefix = null;
 
     /**
      * True if generated value is to be unique.
@@ -68,6 +68,7 @@ class Configs implements ConfigsInterface
 
         $this->setSourceColumn($config[$key]['source_column'])
             ->setDestinationColumn($config[$key]['destination_column'])
+            ->setPrefix($config[$key]['prefix'] ?? null)
             ->setSeparator($default['separator'])
             ->forceUnique($default['unique'])
             ->generateOnCreate($default['generate_on_create'])
@@ -105,7 +106,8 @@ class Configs implements ConfigsInterface
     }
 
     /**
-     * Set the prefix.
+     * Set the prefix: a leading part of the generated value. Null or an empty string for none. For an
+     * order number it replaces the default `ORD`.
      *
      * @param mixed $prefix
      * @return $this
@@ -128,7 +130,7 @@ class Configs implements ConfigsInterface
     /**
      * Set the destination column.
      *
-     * @param  mixed  $destinationColumn
+     * @param  string  $destinationColumn
      * @return $this
      */
     public function setDestinationColumn(string $destinationColumn): self

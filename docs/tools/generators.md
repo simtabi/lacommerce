@@ -44,6 +44,7 @@ use Simtabi\Lacommerce\Supports\Identifiers;
 
 Identifiers::sku('Laravel is Awesome');        // "LAR-8056449213"
 Identifiers::sku('Laravel is Awesome', '_');   // "LAR_8056449213"
+Identifiers::sku('Laravel is Awesome', '-', 'acme'); // "ACME-LAR-8056449213"
 Identifiers::orderNumber();                    // "ORD-3920571846"
 Identifiers::orderNumber('INV', '/');          // "INV/3920571846"
 Identifiers::ticketNumber('Support request');  // "SUP-1749302865"
@@ -51,11 +52,12 @@ Identifiers::ticketNumber('Support request');  // "SUP-1749302865"
 
 | Method | Returns |
 |--------|---------|
-| `sku(string $source, string $separator = '-')` | First three characters of the studly-cased source, the separator, ten random digits, upper-cased. |
+| `sku(string $source, string $separator = '-', ?string $prefix = null)` | The prefix when given, then the first three characters of the studly-cased source, then ten random digits, joined by the separator and upper-cased. |
 | `orderNumber(?string $prefix = null, string $separator = '-')` | The prefix (`ORD` when empty), the separator, ten random digits, upper-cased. |
-| `ticketNumber(string $source, string $separator = '-')` | As `sku()`. |
+| `ticketNumber(string $source, string $separator = '-', ?string $prefix = null)` | As `sku()`. |
 
-The separator is used as given. The traits pass the configured `generator.default.separator`. A value from
+The separator is used as given. The traits pass the configured `generator.default.separator`, and the
+`prefix` from the generator's config block (see [Prefixes](#prefixes)). A value from
 `Identifiers` is not checked against your table; uniqueness is enforced by the traits' generators.
 
 ### `Str` macros
@@ -69,7 +71,9 @@ configured separator when you pass none:
 | `Str::simtabiLacommerceOrderNumber(?string $source, ?string $separator = null, ?string $prefix = null)` | `Identifiers::orderNumber($prefix, …)`; `$source` is ignored |
 | `Str::simtabiLacommerceTicketNumber(string $source, ?string $separator = null)` | `Identifiers::ticketNumber()` |
 
-Each takes the same arguments as the bare macro it replaces, so migrating is a rename.
+Each takes the same arguments as the bare macro it replaces, so migrating is a rename. The `sku` and
+`ticketNumber` macros accept a third `$prefix` argument and ignore it, as the 0.1.0 macros did; to prefix a
+SKU or ticket number, call `Identifiers` or set `prefix` in the config.
 
 > The bare `Str::sku()`, `Str::orderNumber()` and `Str::ticketNumber()` from 0.1.0 are deprecated.
 > `Str`'s macros are one flat map keyed by name, so another package or your application registering
@@ -96,7 +100,8 @@ class Product extends Model
     {
         return SkuConfigs::make()
             ->setSourceColumn(['id', 'user_id'])
-            ->setDestinationColumn('order_number')
+            ->setDestinationColumn('sku')
+            ->setPrefix('ACME')
             ->setSeparator('-')
             ->forceUnique(true)
             ->generateOnCreate(true)
@@ -105,40 +110,117 @@ class Product extends Model
 }
 ```
 
+## Prefixes
+
+Each generator's config block takes a `prefix`, `null` by default. When set, it leads the value:
+
+| Block | `prefix` | Value |
+|-------|----------|-------|
+| `sku` | `'acme'` | `ACME-BLU-8056449213` |
+| `ticket_number` | `'HD'` | `HD-PRI-1749302865` |
+| `order_number` | `'INV'` | `INV-3920571846`; the prefix replaces the default `ORD` |
+
+`setPrefix()` on a model's configs sets it per model, as in the example above. `getPrefix()` returns `null`
+when none is set.
+
 ## Custom generators
 
-For extra logic (a default value, a prefix, …) extend the base generator and override `getSourceString()`:
+The shipped `SkuGenerator`, `OrderNumberGenerator` and `TicketNumberGenerator` are final, so they are not the
+thing to extend. The provider builds whichever class a config block's `generator` key names as
+`new $class($model)`, so a custom generator needs two things:
+
+- a constructor that takes the model as its only argument, and
+- `Simtabi\Lacommerce\Generators\Services\Contracts\GeneratorInterface`, whose one method, `render()`,
+  returns the value. Implement the per-type interface beside it in `Generators\Contracts`
+  (`SkuGeneratorInterface`, `OrderNumberGeneratorInterface`, `TicketNumberGeneratorInterface`), which extends
+  it, so the class is what the container says it resolves.
+
+A class naming anything else fails on the first save with an `InvalidOptionException` that names the config
+key.
+
+### Extend the base generator
+
+`Simtabi\Lacommerce\Generators\Services\Generator` is the base the shipped generators extend, and it is
+built to be extended. Its parent constructor takes the model, the trait's config method (`skuConfigs`,
+`orderNumberConfigs` or `ticketNumberConfigs`) and the identifier kind (`sku`, `orderNumber` or
+`ticketNumber`). `render()` builds the source with `getSourceString()`, makes a candidate with `makeValue()`,
+and, when `unique` is on, retries while `exists()` finds the candidate in the destination column. Override
+whichever of those protected methods you need, and the rest, uniqueness included, keeps working.
+
+This one falls back to a fixed source when the model's source columns are empty:
 
 ```php
-namespace App\Components\SkuGenerator;
+namespace App\Generators;
 
-use Simtabi\Lacommerce\Generators\Concerns\Sku\SkuGenerator;
+use Illuminate\Database\Eloquent\Model;
+use Simtabi\Lacommerce\Generators\Contracts\SkuGeneratorInterface;
+use Simtabi\Lacommerce\Generators\Services\Generator;
 
-class CustomSkuGenerator extends SkuGenerator
+final class FallbackSkuGenerator extends Generator implements SkuGeneratorInterface
 {
+    public function __construct(Model $model)
+    {
+        parent::__construct($model, 'skuConfigs', 'sku');
+    }
+
     protected function getSourceString(): string
     {
-        $source = $this->modelConfig->sourceColumn;
-        $fields = array_filter($this->model->only($source));
+        $fields = array_filter($this->model->only($this->modelConfig->getSourceColumn()));
 
-        if (empty($fields)) {
-            return 'some-random-value-logic';
+        if ($fields === []) {
+            return 'item';
         }
 
-        return implode($this->modelConfig->separator, $fields);
+        return implode($this->modelConfig->getSeparator(), $fields);
     }
 }
 ```
 
-Then point the config at it:
+A product named `Blue shirt` still gets `BLU-8056449213`; one with an empty name gets `ITE-8056449213`.
+
+### Implement the interface
+
+When the value has nothing to do with the shipped format, implement the interface directly. You then own
+uniqueness:
 
 ```php
-'generator' => \App\Components\SkuGenerator\CustomSkuGenerator::class,
+namespace App\Generators;
+
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Str;
+use Simtabi\Lacommerce\Generators\Contracts\TicketNumberGeneratorInterface;
+
+final class SlugTicketNumberGenerator implements TicketNumberGeneratorInterface
+{
+    public function __construct(private readonly Model $model)
+    {
+    }
+
+    public function render(): string
+    {
+        return 'TKT-' . Str::upper(Str::slug((string) $this->model->getAttribute('name')));
+    }
+}
 ```
 
-A custom generator must implement `Simtabi\Lacommerce\Generators\Contracts\SkuGeneratorInterface` (or the
-`OrderNumberGeneratorInterface` / `TicketNumberGeneratorInterface` beside it); extending the shipped generator
-does that for you.
+### Configure it
+
+Name the class in the published `config/simtabi/lacommerce.php`:
+
+```php
+'generator' => [
+    // ...
+    'sku' => [
+        'generator'          => \App\Generators\FallbackSkuGenerator::class,
+        'source_column'      => 'name',
+        'destination_column' => 'sku',
+        'prefix'             => null,
+    ],
+],
+```
+
+Both examples are the package's own test fixtures, run against a model on every build, and a test fails if
+the first one here stops matching its fixture.
 
 ## About SKUs
 

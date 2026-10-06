@@ -54,7 +54,10 @@ return [
         |
         */
         'sku'           => [
-            /** Generator and must @implements GeneratorInterface */
+            /**
+             * Generator class. Built as `new $class($model)`, it must implement GeneratorInterface;
+             * extend Generators\Services\Generator to customise one. See docs/tools/generators.md.
+             */
             'generator'          => SkuGenerator::class,
 
             /** Source field(column) */
@@ -62,6 +65,9 @@ return [
 
             /** Destination field(column) */
             'destination_column' => 'sku',
+
+            /** Optional leading part, e.g. 'ACME' gives ACME-LAR-8056449213 */
+            'prefix'             => null,
         ],
 
         /*
@@ -71,7 +77,10 @@ return [
         |
         */
         'ticket_number' => [
-            /** Generator and must @implements GeneratorInterface */
+            /**
+             * Generator class. Built as `new $class($model)`, it must implement GeneratorInterface;
+             * extend Generators\Services\Generator to customise one. See docs/tools/generators.md.
+             */
             'generator'          => TicketNumberGenerator::class,
 
             /** Source field(column) */
@@ -79,6 +88,9 @@ return [
 
             /** Destination field(column) */
             'destination_column' => 'ticket_number',
+
+            /** Optional leading part, e.g. 'HD' gives HD-SUP-1749302865 */
+            'prefix'             => null,
         ],
 
         /*
@@ -88,7 +100,10 @@ return [
         |
         */
         'order_number'  => [
-            /** Generator and must @implements GeneratorInterface */
+            /**
+             * Generator class. Built as `new $class($model)`, it must implement GeneratorInterface;
+             * extend Generators\Services\Generator to customise one. See docs/tools/generators.md.
+             */
             'generator'          => OrderNumberGenerator::class,
 
             /** Source field(column) */
@@ -96,6 +111,9 @@ return [
 
             /** Destination field(column) */
             'destination_column' => 'order_number',
+
+            /** Replaces the default ORD prefix when set, e.g. 'INV' gives INV-3920571846 */
+            'prefix'             => null,
         ],
     ],
 

@@ -10,6 +10,16 @@ use Simtabi\Lacommerce\Generators\Services\Contracts\GeneratorInterface;
 use Simtabi\Lacommerce\Providers\LacommerceServiceProvider;
 use Simtabi\Lacommerce\Supports\Identifiers;
 
+/**
+ * The base every shipped generator extends, and the one a custom generator should extend.
+ *
+ * The provider builds a generator as `new $class($model)`, so a subclass declares a one-argument
+ * constructor and passes the model, the trait's config method (`skuConfigs`, `orderNumberConfigs`,
+ * `ticketNumberConfigs`) and the identifier kind (`sku`, `orderNumber`, `ticketNumber`) to this one.
+ * render() then builds the source with getSourceString(), makes a candidate with makeValue(), and, when
+ * the config forces uniqueness, retries while exists() finds the candidate in the destination column.
+ * Override any of those protected hooks; the shipped subclasses are final and are not the seam.
+ */
 class Generator implements Jsonable, Renderable, GeneratorInterface
 {
     /**
@@ -60,7 +70,7 @@ class Generator implements Jsonable, Renderable, GeneratorInterface
         $source = $this->getSourceString();
 
         // now, generate the value
-        return $this->generate($source, $this->modelConfig->separator, $this->modelConfig->forceUnique);
+        return $this->generate($source, $this->modelConfig->getSeparator(), $this->modelConfig->isForceUnique());
     }
 
     /**
@@ -71,13 +81,13 @@ class Generator implements Jsonable, Renderable, GeneratorInterface
     protected function getSourceString(): string
     {
         // fetch the source fields
-        $source = $this->modelConfig->sourceColumn;
+        $source = $this->modelConfig->getSourceColumn();
 
         // Fetch fields from model, skip empty
         $fields = array_filter($this->model->only($source));
 
         // Implode with a separator
-        return implode($this->modelConfig->separator, $fields);
+        return implode($this->modelConfig->getSeparator(), $fields);
     }
 
     /**
@@ -109,7 +119,8 @@ class Generator implements Jsonable, Renderable, GeneratorInterface
      * or application that registered its own `Str::sku()` replace what every model generated. A
      * subclass naming any other `$strMixin` still has that macro called, as before.
      *
-     * An empty separator falls back to the configured default, as the 0.1.0 macros did.
+     * An empty separator falls back to the configured default, as the 0.1.0 macros did. The configured
+     * prefix, when there is one, leads the value; for an order number it replaces `ORD`.
      *
      * @param  string  $source
      * @param  string  $separator
@@ -122,10 +133,12 @@ class Generator implements Jsonable, Renderable, GeneratorInterface
             Identifiers::DEFAULT_SEPARATOR,
         );
 
+        $prefix = $this->modelConfig->getPrefix();
+
         return match ($this->strMixin) {
-            'sku'          => Identifiers::sku($source, $separator),
-            'orderNumber'  => Identifiers::orderNumber(null, $separator),
-            'ticketNumber' => Identifiers::ticketNumber($source, $separator),
+            'sku'          => Identifiers::sku($source, $separator, $prefix),
+            'orderNumber'  => Identifiers::orderNumber($prefix, $separator),
+            'ticketNumber' => Identifiers::ticketNumber($source, $separator, $prefix),
             default        => Str::{$this->strMixin}($source, $separator),
         };
     }
@@ -140,7 +153,7 @@ class Generator implements Jsonable, Renderable, GeneratorInterface
     {
         return $this->model
             ->whereKeyNot($this->model->getKey())
-            ->where($this->modelConfig->destinationColumn, $value)
+            ->where($this->modelConfig->getDestinationColumn(), $value)
             ->withoutGlobalScopes()
             ->exists();
     }

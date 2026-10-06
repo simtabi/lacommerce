@@ -6,7 +6,7 @@ use Exception;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Contracts\Routing\ResponseFactory;
 use Illuminate\Http\Response;
-use Illuminate\Support\Facades\Request;
+use Illuminate\Http\Request;
 
 class InvalidOptionException extends Exception
 {
@@ -15,11 +15,12 @@ class InvalidOptionException extends Exception
      * Invalid Argument.
      *
      * @param string $message
-     * @return self [type]
+     * @param int    $code    HTTP status render() responds with; 500 when not given
+     * @return self
      */
-    public static function invalidArgument(string $message): self
+    public static function invalidArgument(string $message, int $code = 500): self
     {
-        return new static($message);
+        return new static($message, $code);
     }
 
     /**

@@ -14,9 +14,10 @@ use Illuminate\Support\Str;
  * `Str::simtabiLacommerce*()` macros forward to it. Calling it directly means another package or the
  * host application registering a `Str` macro of the same name cannot change what it returns.
  *
- * Each value is a source part, the separator, and ten random digits, upper-cased:
- * `Identifiers::sku('laravel is awesome')` returns e.g. `LAR-8056449213`. Uniqueness against a table
- * is the generator's job, not this class's.
+ * Each value is an optional prefix, a source part and ten random digits, joined by the separator and
+ * upper-cased: `Identifiers::sku('laravel is awesome')` returns e.g. `LAR-8056449213`, and
+ * `Identifiers::sku('laravel is awesome', '-', 'acme')` returns e.g. `ACME-LAR-8056449213`. Uniqueness
+ * against a table is the generator's job, not this class's.
  */
 final class Identifiers
 {
@@ -25,11 +26,11 @@ final class Identifiers
     public const DEFAULT_ORDER_PREFIX = 'ORD';
 
     /**
-     * A SKU from the first three characters of the studly-cased source.
+     * A SKU from the first three characters of the studly-cased source, led by the prefix when one is given.
      */
-    public static function sku(string $source, string $separator = self::DEFAULT_SEPARATOR): string
+    public static function sku(string $source, string $separator = self::DEFAULT_SEPARATOR, ?string $prefix = null): string
     {
-        return Helpers::makeRandomString(self::sourcePart($source), $separator);
+        return Helpers::makeRandomString(self::sourcePart($source), $separator, $prefix);
     }
 
     /**
@@ -41,11 +42,12 @@ final class Identifiers
     }
 
     /**
-     * A ticket number from the first three characters of the studly-cased source.
+     * A ticket number from the first three characters of the studly-cased source, led by the prefix when
+     * one is given.
      */
-    public static function ticketNumber(string $source, string $separator = self::DEFAULT_SEPARATOR): string
+    public static function ticketNumber(string $source, string $separator = self::DEFAULT_SEPARATOR, ?string $prefix = null): string
     {
-        return Helpers::makeRandomString(self::sourcePart($source), $separator);
+        return Helpers::makeRandomString(self::sourcePart($source), $separator, $prefix);
     }
 
     private static function sourcePart(string $source): string

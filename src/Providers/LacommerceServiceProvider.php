@@ -3,6 +3,7 @@
 namespace Simtabi\Lacommerce\Providers;
 
 use Illuminate\Contracts\Foundation\CachesConfiguration;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\ServiceProvider;
 use Simtabi\Lacommerce\Generators\Concerns\OrderNumber\OrderNumberConfigs;
 use Simtabi\Lacommerce\Generators\Concerns\Sku\SkuConfigs;
@@ -10,6 +11,8 @@ use Simtabi\Lacommerce\Generators\Concerns\TicketNumber\TicketNumberConfigs;
 use Simtabi\Lacommerce\Generators\Contracts\SkuGeneratorInterface;
 use Simtabi\Lacommerce\Generators\Contracts\TicketNumberGeneratorInterface;
 use Simtabi\Lacommerce\Generators\Contracts\OrderNumberGeneratorInterface;
+use Simtabi\Lacommerce\Generators\Exceptions\InvalidOptionException;
+use Simtabi\Lacommerce\Generators\Services\Contracts\GeneratorInterface;
 use Simtabi\Lacommerce\Supports\StrMacros;
 
 class LacommerceServiceProvider extends ServiceProvider
@@ -146,7 +149,11 @@ class LacommerceServiceProvider extends ServiceProvider
     }
 
     /**
-     * Bind the Generator.
+     * Bind each generator interface to the class its config block names.
+     *
+     * The class is built as `new $class($model)`, so it takes the model as its only constructor
+     * argument, and it must implement GeneratorInterface: the observer calls render() on it. Extending
+     * Generators\Services\Generator satisfies both. See docs/tools/generators.md.
      *
      * @return void
      */
@@ -155,23 +162,37 @@ class LacommerceServiceProvider extends ServiceProvider
 
         $config = $this->getConfig();
 
-        $this->app->bind(SkuGeneratorInterface::class, function ($app, array $parameters) use ($config) {
-            $generator = $config['sku']['generator'];
+        $bindings = [
+            SkuGeneratorInterface::class          => 'sku',
+            OrderNumberGeneratorInterface::class  => 'order_number',
+            TicketNumberGeneratorInterface::class => 'ticket_number',
+        ];
 
-            return new $generator(head($parameters));
-        });
+        foreach ($bindings as $interface => $key) {
+            $this->app->bind($interface, function ($app, array $parameters) use ($config, $key) {
+                return self::makeGenerator($config[$key]['generator'] ?? null, $key, head($parameters));
+            });
+        }
+    }
 
-        $this->app->bind(OrderNumberGeneratorInterface::class, function ($app, array $parameters) use ($config) {
-            $generator = $config['order_number']['generator'];
+    /**
+     * Build the configured generator, or say which config key names something that is not one.
+     *
+     * @throws InvalidOptionException
+     */
+    private static function makeGenerator(mixed $class, string $key, Model $model): GeneratorInterface
+    {
+        if (! is_string($class) || ! is_a($class, GeneratorInterface::class, true)) {
+            throw InvalidOptionException::invalidArgument(sprintf(
+                '%s.generator.%s.generator must name a class implementing %s; %s given.',
+                self::CONFIG_KEY,
+                $key,
+                GeneratorInterface::class,
+                is_string($class) ? $class : get_debug_type($class),
+            ));
+        }
 
-            return new $generator(head($parameters));
-        });
-
-        $this->app->bind(TicketNumberGeneratorInterface::class, function ($app, array $parameters) use ($config) {
-            $generator = $config['ticket_number']['generator'];
-
-            return new $generator(head($parameters));
-        });
+        return new $class($model);
     }
 
     private function getConfig(): array
