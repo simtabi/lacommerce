@@ -56,6 +56,16 @@ class Order extends Model
 echo Order::create(['name' => 'Web order'])->order_number; // "ORD-3920571846"
 ```
 
+To generate a value without a model, call `Identifiers` directly:
+
+```php
+use Simtabi\Lacommerce\Supports\Identifiers;
+
+Identifiers::sku('Laravel is Awesome');    // "LAR-8056449213"
+Identifiers::orderNumber('INV', '/');      // "INV/3920571846"
+Identifiers::ticketNumber('Support');      // "SUP-1749302865"
+```
+
 The full walkthrough is in [docs/getting-started.md](docs/getting-started.md); everything else is in the
 [Documentation](#documentation) index.
 

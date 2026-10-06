@@ -4,14 +4,13 @@ namespace Simtabi\Lacommerce\Providers;
 
 use Illuminate\Contracts\Foundation\CachesConfiguration;
 use Illuminate\Support\ServiceProvider;
-use Illuminate\Support\Str;
 use Simtabi\Lacommerce\Generators\Concerns\OrderNumber\OrderNumberConfigs;
 use Simtabi\Lacommerce\Generators\Concerns\Sku\SkuConfigs;
 use Simtabi\Lacommerce\Generators\Concerns\TicketNumber\TicketNumberConfigs;
 use Simtabi\Lacommerce\Generators\Contracts\SkuGeneratorInterface;
 use Simtabi\Lacommerce\Generators\Contracts\TicketNumberGeneratorInterface;
 use Simtabi\Lacommerce\Generators\Contracts\OrderNumberGeneratorInterface;
-use Simtabi\Lacommerce\Supports\Helpers;
+use Simtabi\Lacommerce\Supports\StrMacros;
 
 class LacommerceServiceProvider extends ServiceProvider
 {
@@ -206,39 +205,17 @@ class LacommerceServiceProvider extends ServiceProvider
 
     }
 
-    private function registerStrMacros()
+    /**
+     * Register the vendor-scoped Str macros, and the deprecated bare ones unless the host opted out.
+     *
+     * The bodies moved to Supports\StrMacros, which forwards to Supports\Identifiers.
+     */
+    private function registerStrMacros(): void
     {
-
-        $defSeparator = config(self::CONFIG_KEY . '.generator.default.separator', '-');
-
-        Str::macro('sku', function (string $source, ?string $separator = null, ?string $prefix = null) use ($defSeparator){
-            $separator = $separator ?: $defSeparator;
-            // Clean up the source
-            $source    = Str::studly($source);
-            // Limit the source
-            $source    = Str::limit($source, 3, '');
-            // Add prefix @todo
-
-            return Helpers::makeRandomString($source, $separator);
-        });
-
-        Str::macro('orderNumber', function (?string $source, ?string $separator = null, ?string $prefix = null) use ($defSeparator){
-            $separator = $separator ?: $defSeparator;
-            $source    = !empty($prefix) ? $prefix: 'ORD';
-
-            return Helpers::makeRandomString($source, $separator);
-        });
-
-        Str::macro('ticketNumber', function (string $source, ?string $separator = null, ?string $prefix = null) use ($defSeparator){
-            $separator = $separator ?: $defSeparator;
-            // Clean up the source
-            $source    = Str::studly($source);
-            // Limit the source
-            $source    = Str::limit($source, 3, '');
-
-            return Helpers::makeRandomString($source, $separator);
-        });
-
+        StrMacros::register(
+            (string) config(self::CONFIG_KEY . '.generator.default.separator', '-'),
+            (bool) config(self::CONFIG_KEY . '.register_legacy_macros', true),
+        );
     }
 
     /**

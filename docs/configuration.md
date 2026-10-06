@@ -5,11 +5,13 @@ and read from the `simtabi.lacommerce` config key. See the [Documentation index]
 
 ## Structure
 
-Config lives under `generator`: a shared `default` block plus one block per generator (`sku`,
+Config lives under `generator`, plus the top-level `register_legacy_macros` switch. `generator` holds a shared `default` block plus one block per generator (`sku`,
 `ticket_number`, `order_number`).
 
 ```php
 return [
+    'register_legacy_macros' => true,   // register the deprecated bare Str macros
+
     'generator' => [
         'default' => [
             'separator'          => '-',    // separator between source parts
@@ -43,6 +45,7 @@ return [
 
 | Key | Purpose |
 |-----|---------|
+| `register_legacy_macros` | Register the deprecated bare `Str::sku()`, `Str::orderNumber()` and `Str::ticketNumber()` (default `true`). Set `false` to leave those names free; see [Generators](tools/generators.md#str-macros). |
 | `generator.default.separator` | Joins multiple source values (default `-`). |
 | `generator.default.unique` | Enforce the generated value is unique. |
 | `generator.default.generate_on_create` | Generate when the model is created. |

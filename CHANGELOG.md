@@ -7,6 +7,27 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Added
+
+- `Simtabi\Lacommerce\Supports\Identifiers`: `sku()`, `orderNumber()` and `ticketNumber()` as a final class
+  that goes through no registry. It is now the primary way to generate a value without a model.
+- Vendor-scoped `Str` macros `Str::simtabiLacommerceSku()`, `Str::simtabiLacommerceOrderNumber()` and
+  `Str::simtabiLacommerceTicketNumber()`, taking the same arguments as the bare macros they replace.
+- Config key `register_legacy_macros` (default `true`). Set it to `false` to stop registering the bare macros.
+
+### Changed
+
+- The `HasSku`, `HasOrderNumber` and `HasTicketNumber` generators call `Identifiers` directly instead of the
+  bare `Str` macro. A package or application that registers its own `Str::sku()` no longer changes what
+  your models generate. A custom generator naming another `$strMixin` still has that macro called.
+
+### Deprecated
+
+- The bare macros `Str::sku()`, `Str::orderNumber()` and `Str::ticketNumber()`. `Str`'s macro registry is one
+  flat map, so any other registration of those names silently replaces them. They still work, with the
+  same arguments and output, forwarding to the scoped macros, and raise one `E_USER_DEPRECATED` per name per
+  boot. Earliest removal: 0.2.0.
+
 ## [0.1.0] - 2026-10-05
 
 The first tagged release. An entry dated 2022-02-03 used to sit here as `0.1.0`, but no tag was ever
