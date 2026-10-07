@@ -35,12 +35,12 @@ interface ConfigsInterface
     public function getSourceColumn(): array|string;
 
     /**
-     * Set the prefix.
+     * Set the prefix: a leading part of the generated value. Null or an empty string for none.
      *
-     * @param string $prefix
+     * @param ?string $prefix
      * @return $this
      */
-    public function setPrefix(string $prefix): self;
+    public function setPrefix(?string $prefix): self;
 
     /**
      * @return ?string

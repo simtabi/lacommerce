@@ -8,6 +8,14 @@ use Illuminate\Contracts\Routing\ResponseFactory;
 use Illuminate\Http\Response;
 use Illuminate\Http\Request;
 
+/**
+ * Thrown for a configuration value the package cannot use.
+ *
+ * Not final, so a subclass keeps working, and invalidArgument() returns an instance of the class it is called
+ * on. A subclass must keep a constructor callable as `new static($message, $code)`.
+ *
+ * @phpstan-consistent-constructor
+ */
 class InvalidOptionException extends Exception
 {
 

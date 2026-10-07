@@ -67,13 +67,13 @@ configured separator when you pass none:
 
 | Macro | Forwards to |
 |-------|-------------|
-| `Str::simtabiLacommerceSku(string $source, ?string $separator = null)` | `Identifiers::sku()` |
+| `Str::simtabiLacommerceSku(string $source, ?string $separator = null, ?string $prefix = null)` | `Identifiers::sku()` |
 | `Str::simtabiLacommerceOrderNumber(?string $source, ?string $separator = null, ?string $prefix = null)` | `Identifiers::orderNumber($prefix, …)`; `$source` is ignored |
-| `Str::simtabiLacommerceTicketNumber(string $source, ?string $separator = null)` | `Identifiers::ticketNumber()` |
+| `Str::simtabiLacommerceTicketNumber(string $source, ?string $separator = null, ?string $prefix = null)` | `Identifiers::ticketNumber()` |
 
 Each takes the same arguments as the bare macro it replaces, so migrating is a rename. The `sku` and
-`ticketNumber` macros accept a third `$prefix` argument and ignore it, as the 0.1.0 macros did; to prefix a
-SKU or ticket number, call `Identifiers` or set `prefix` in the config.
+`ticketNumber` macros pass their third `$prefix` argument through, so `Str::simtabiLacommerceSku('laravel',
+'-', 'acme')` returns e.g. `ACME-LAR-8056449213`. The 0.1.0 macros accepted it and dropped it.
 
 > The bare `Str::sku()`, `Str::orderNumber()` and `Str::ticketNumber()` from 0.1.0 are deprecated.
 > `Str`'s macros are one flat map keyed by name, so another package or your application registering

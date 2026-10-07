@@ -48,11 +48,19 @@ final class ScopedStrMacrosTest extends TestCase
     public function the_scoped_macros_keep_the_bare_signatures(): void
     {
         $this->assertMatchesRegularExpression('/^LAR-\d{10}$/', Str::simtabiLacommerceSku('laravel is awesome'));
-        $this->assertMatchesRegularExpression('/^LAR_\d{10}$/', Str::simtabiLacommerceSku('laravel', '_', 'ignored'));
+        $this->assertMatchesRegularExpression('/^LAR_\d{10}$/', Str::simtabiLacommerceSku('laravel', '_'));
         $this->assertMatchesRegularExpression('/^LAR-\d{10}$/', Str::simtabiLacommerceSku('laravel', ''));
         $this->assertMatchesRegularExpression('/^ORD-\d{10}$/', Str::simtabiLacommerceOrderNumber('ignored'));
         $this->assertMatchesRegularExpression('/^INV\/\d{10}$/', Str::simtabiLacommerceOrderNumber(null, '/', 'inv'));
         $this->assertMatchesRegularExpression('/^SUP-\d{10}$/', Str::simtabiLacommerceTicketNumber('support request'));
+    }
+
+    #[Test]
+    public function the_scoped_macros_pass_the_prefix_through(): void
+    {
+        $this->assertMatchesRegularExpression('/^ACME_LAR_\d{10}$/', Str::simtabiLacommerceSku('laravel', '_', 'acme'));
+        $this->assertMatchesRegularExpression('/^HD-SUP-\d{10}$/', Str::simtabiLacommerceTicketNumber('support', '', 'hd'));
+        $this->assertMatchesRegularExpression('/^SUP-\d{10}$/', Str::simtabiLacommerceTicketNumber('support', '-', null));
     }
 
     #[Test]

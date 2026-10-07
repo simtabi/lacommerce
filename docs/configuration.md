@@ -60,6 +60,11 @@ return [
 
 Override any of these per model via the trait's config method — see [Generators](tools/generators.md).
 
+The generator and configs bindings read `simtabi.lacommerce.generator` each time they resolve, so a
+`config()->set('simtabi.lacommerce.generator.…', …)` made after boot applies to the next model saved. Set the
+`simtabi.lacommerce` key: the deprecated `lacommerce` mirror is copied once at boot and is not read back. The
+`Str` macros' default separator is still read once, at boot.
+
 The published file replaces the defaults block by block, not key by key: a top-level key you keep
 (`generator`) must carry every nested key the package reads, so publish the whole file and edit it.
 

@@ -12,7 +12,8 @@ use Simtabi\Lacommerce\Tests\TestCase;
 /**
  * Pins the behaviour of the bare Str macros shipped in 0.1.0 (`Str::sku`, `Str::orderNumber`,
  * `Str::ticketNumber`). They are deprecated, not removed: their output format and arguments must not
- * change until the release that removes them.
+ * change until the release that removes them. One change is deliberate: the SKU and ticket-number macros
+ * pass their `$prefix` through again, which 0.1.0 accepted and dropped (see CHANGELOG, Unreleased).
  */
 final class LegacyStrMacrosTest extends TestCase
 {
@@ -53,9 +54,12 @@ final class LegacyStrMacrosTest extends TestCase
     }
 
     #[Test]
-    public function sku_ignores_its_prefix_argument(): void
+    public function sku_leads_with_its_prefix_argument(): void
     {
-        $this->assertMatchesRegularExpression('/^LAR-\d{10}$/', @Str::sku('laravel', '-', 'PFX'));
+        // 0.1.0 accepted the prefix and dropped it. It is honoured again, as it was before 2022.
+        $this->assertMatchesRegularExpression('/^PFX-LAR-\d{10}$/', @Str::sku('laravel', '-', 'pfx'));
+        $this->assertMatchesRegularExpression('/^LAR-\d{10}$/', @Str::sku('laravel', '-', null));
+        $this->assertMatchesRegularExpression('/^LAR-\d{10}$/', @Str::sku('laravel', '-', ''));
     }
 
     #[Test]
@@ -76,6 +80,13 @@ final class LegacyStrMacrosTest extends TestCase
     {
         $this->assertMatchesRegularExpression('/^SUP-\d{10}$/', @Str::ticketNumber('support request'));
         $this->assertMatchesRegularExpression('/^SUP\.\d{10}$/', @Str::ticketNumber('support', '.'));
+    }
+
+    #[Test]
+    public function ticket_number_leads_with_its_prefix_argument(): void
+    {
+        $this->assertMatchesRegularExpression('/^HD-SUP-\d{10}$/', @Str::ticketNumber('support', '-', 'hd'));
+        $this->assertMatchesRegularExpression('/^HD-SUP-\d{10}$/', @Str::ticketNumber('support', null, 'hd'));
     }
 
     #[Test]

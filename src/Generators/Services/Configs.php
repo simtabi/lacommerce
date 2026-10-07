@@ -77,11 +77,27 @@ class Configs implements ConfigsInterface
     }
 
     /**
+     * Resolve the class this is called on from the container.
+     *
+     * Call it on a subclass the container can build, such as SkuConfigs::make(). The base class cannot be
+     * resolved, because its constructor needs a config array and a key, so calling make() on it throws an
+     * exception naming the subclasses rather than a container error about an unresolvable `array $config`.
+     *
      * @return ConfigsInterface
+     *
+     * @throws InvalidOptionException when called on Configs itself
      */
     public static function make(): ConfigsInterface
     {
-        return resolve(self::class);
+        if (static::class === self::class) {
+            throw InvalidOptionException::invalidArgument(sprintf(
+                '%s::make() cannot build the base class; call it on a subclass bound in the container, such as '
+                . 'SkuConfigs::make(), OrderNumberConfigs::make() or TicketNumberConfigs::make().',
+                self::class,
+            ));
+        }
+
+        return resolve(static::class);
     }
 
     /**
@@ -109,10 +125,13 @@ class Configs implements ConfigsInterface
      * Set the prefix: a leading part of the generated value. Null or an empty string for none. For an
      * order number it replaces the default `ORD`.
      *
-     * @param mixed $prefix
+     * Declared `?string`, as ConfigsInterface declares it. It took `mixed` before; a scalar from a config
+     * file is still coerced to a string here, because this file does not declare strict types.
+     *
+     * @param ?string $prefix
      * @return $this
      */
-    public function setPrefix(mixed $prefix): self
+    public function setPrefix(?string $prefix): self
     {
         $this->prefix = $prefix;
 

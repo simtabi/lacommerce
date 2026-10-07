@@ -155,13 +155,13 @@ class LacommerceServiceProvider extends ServiceProvider
      * argument, and it must implement GeneratorInterface: the observer calls render() on it. Extending
      * Generators\Services\Generator satisfies both. See docs/tools/generators.md.
      *
+     * The config is read when the binding resolves, not at boot, so a `config()` change made after boot
+     * applies to the next generator built.
+     *
      * @return void
      */
     protected function bindGenerator()
     {
-
-        $config = $this->getConfig();
-
         $bindings = [
             SkuGeneratorInterface::class          => 'sku',
             OrderNumberGeneratorInterface::class  => 'order_number',
@@ -169,8 +169,8 @@ class LacommerceServiceProvider extends ServiceProvider
         ];
 
         foreach ($bindings as $interface => $key) {
-            $this->app->bind($interface, function ($app, array $parameters) use ($config, $key) {
-                return self::makeGenerator($config[$key]['generator'] ?? null, $key, head($parameters));
+            $this->app->bind($interface, function ($app, array $parameters) use ($key) {
+                return self::makeGenerator($this->getConfig()[$key]['generator'] ?? null, $key, head($parameters));
             });
         }
     }
@@ -205,25 +205,24 @@ class LacommerceServiceProvider extends ServiceProvider
     /**
      * Bind Configs.
      *
+     * Not singletons, and the config is read when the binding resolves rather than at boot, so a `config()`
+     * change made after boot applies to the next Configs built.
+     *
      * @return void
      */
     protected function bindConfigs()
     {
-
-        $config = $this->getConfig();
-
-        $this->app->bind(SkuConfigs::class, function ($app) use ($config) {
-            return new SkuConfigs($config, 'sku');
+        $this->app->bind(SkuConfigs::class, function ($app) {
+            return new SkuConfigs($this->getConfig(), 'sku');
         });
 
-        $this->app->bind(OrderNumberConfigs::class, function ($app) use ($config) {
-            return new OrderNumberConfigs($config, 'order_number');
+        $this->app->bind(OrderNumberConfigs::class, function ($app) {
+            return new OrderNumberConfigs($this->getConfig(), 'order_number');
         });
 
-        $this->app->bind(TicketNumberConfigs::class, function ($app) use ($config) {
-            return new TicketNumberConfigs($config, 'ticket_number');
+        $this->app->bind(TicketNumberConfigs::class, function ($app) {
+            return new TicketNumberConfigs($this->getConfig(), 'ticket_number');
         });
-
     }
 
     /**

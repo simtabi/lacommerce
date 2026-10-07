@@ -36,6 +36,28 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   `Illuminate\Http\Request`. It used to drop the code its one caller passed, leaving `0`, and type-hint the
   `Request` facade, which a real request never is.
 
+- The `sku` and `ticketNumber` `Str` macros, scoped and bare, pass their `$prefix` argument through to
+  `Identifiers`. 0.1.0 accepted it and dropped it, which commit `5a0461b` (2022) introduced when it moved the
+  bodies out of the macros; before that the prefix was honoured. A call that passed a prefix now gets it as the
+  leading segment: `Str::sku('laravel', '-', 'pfx')` returned `LAR-8056449213` and now returns
+  `PFX-LAR-8056449213`. Calls without a prefix, or with `null` or `''`, are unchanged.
+
+- `ConfigsInterface::setPrefix()` and `Configs::setPrefix()` both take `?string`. The interface took `string`,
+  refusing the `null` that `getPrefix()` returns, and the class took `mixed`. A class implementing
+  `ConfigsInterface` itself must widen its parameter to `?string`. Calling `Configs::setPrefix()` from a file with
+  `declare(strict_types=1)` with a non-string now throws a `TypeError` at the call; a numeric `prefix` in the
+  config file still works.
+
+- The generator and configs bindings read `simtabi.lacommerce.generator` when they resolve instead of once at
+  boot, so a `config()` change made at runtime, in a test or a tenant switch for example, applies to the next
+  value generated. It was silently ignored before.
+
+- A custom generator naming its own `Str` macro as `$strMixin` has that macro called with the configured prefix
+  as a third argument: `Str::yourMacro($source, $separator, $prefix)`, `$prefix` being `null` when none is
+  configured. It got only the source and separator, so a configured prefix never reached it. A macro declaring
+  two parameters ignores the extra argument; one whose third parameter meant something else now receives the
+  prefix there.
+
 ### Deprecated
 
 - The bare macros `Str::sku()`, `Str::orderNumber()` and `Str::ticketNumber()`. `Str`'s macro registry is one
@@ -57,6 +79,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   against a model. A test fails if the documented example stops matching its fixture.
 - A custom generator that implemented `GeneratorInterface` without a `__toString()` threw
   `Object ... could not be converted to string` on every save.
+- PHPStan reported `InvalidOptionException::invalidArgument()`'s `new static` as unsafe. The class now declares
+  `@phpstan-consistent-constructor` and stays open, so a subclass still gets an instance of itself. Nothing in
+  the package extends it; a subclass elsewhere must keep a constructor callable as `new static($message, $code)`,
+  which PHPStan now checks.
+- `Configs::make()` resolved the base `Configs` class, which the container cannot build, so calling it on the
+  base, or on a subclass that inherited it, threw `BindingResolutionException` about an unresolvable
+  `array $config`. It now resolves the class it is called on (`static::class`), and on the base class throws
+  `InvalidOptionException` naming the subclasses to call instead. `SkuConfigs::make()` and its siblings are
+  unchanged.
 - `Configs::getPrefix()`, and `skuConfig('prefix')` and its siblings, threw "must not be accessed before
   initialization" unless `setPrefix()` had been called. The prefix now defaults to `null`.
 
