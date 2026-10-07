@@ -59,3 +59,9 @@ stop passing it. `Str::orderNumber()` always used its prefix and is unchanged.
   `setPrefix(?string $prefix)`, or PHP refuses to load the class.
 - If you call `setPrefix()` with an `int` or another non-string from a file declaring `strict_types=1`, cast
   it to a string first. A numeric `prefix` in the config file still works.
+
+### Runtime config changes now apply
+
+The generator and configs bindings used to read `simtabi.lacommerce.generator` once, at boot. They read it
+when they resolve now, so `config()->set('simtabi.lacommerce.generator.sku.prefix', 'X')` after boot changes
+the next SKU generated. If code changed that config at runtime expecting nothing to happen, it now takes effect.

@@ -48,6 +48,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   `declare(strict_types=1)` with a non-string now throws a `TypeError` at the call; a numeric `prefix` in the
   config file still works.
 
+- The generator and configs bindings read `simtabi.lacommerce.generator` when they resolve instead of once at
+  boot, so a `config()` change made at runtime, in a test or a tenant switch for example, applies to the next
+  value generated. It was silently ignored before.
+
 ### Deprecated
 
 - The bare macros `Str::sku()`, `Str::orderNumber()` and `Str::ticketNumber()`. `Str`'s macro registry is one
