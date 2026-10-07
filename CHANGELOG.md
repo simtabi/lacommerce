@@ -63,6 +63,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   against a model. A test fails if the documented example stops matching its fixture.
 - A custom generator that implemented `GeneratorInterface` without a `__toString()` threw
   `Object ... could not be converted to string` on every save.
+- `Configs::make()` resolved the base `Configs` class, which the container cannot build, so calling it on the
+  base, or on a subclass that inherited it, threw `BindingResolutionException` about an unresolvable
+  `array $config`. It now resolves the class it is called on (`static::class`), and on the base class throws
+  `InvalidOptionException` naming the subclasses to call instead. `SkuConfigs::make()` and its siblings are
+  unchanged.
 - `Configs::getPrefix()`, and `skuConfig('prefix')` and its siblings, threw "must not be accessed before
   initialization" unless `setPrefix()` had been called. The prefix now defaults to `null`.
 

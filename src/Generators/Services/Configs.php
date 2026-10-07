@@ -77,11 +77,27 @@ class Configs implements ConfigsInterface
     }
 
     /**
+     * Resolve the class this is called on from the container.
+     *
+     * Call it on a subclass the container can build, such as SkuConfigs::make(). The base class cannot be
+     * resolved, because its constructor needs a config array and a key, so calling make() on it throws an
+     * exception naming the subclasses rather than a container error about an unresolvable `array $config`.
+     *
      * @return ConfigsInterface
+     *
+     * @throws InvalidOptionException when called on Configs itself
      */
     public static function make(): ConfigsInterface
     {
-        return resolve(self::class);
+        if (static::class === self::class) {
+            throw InvalidOptionException::invalidArgument(sprintf(
+                '%s::make() cannot build the base class; call it on a subclass bound in the container, such as '
+                . 'SkuConfigs::make(), OrderNumberConfigs::make() or TicketNumberConfigs::make().',
+                self::class,
+            ));
+        }
+
+        return resolve(static::class);
     }
 
     /**
