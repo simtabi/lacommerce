@@ -69,6 +69,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   against a model. A test fails if the documented example stops matching its fixture.
 - A custom generator that implemented `GeneratorInterface` without a `__toString()` threw
   `Object ... could not be converted to string` on every save.
+- PHPStan reported `InvalidOptionException::invalidArgument()`'s `new static` as unsafe. The class now declares
+  `@phpstan-consistent-constructor` and stays open, so a subclass still gets an instance of itself. Nothing in
+  the package extends it; a subclass elsewhere must keep a constructor callable as `new static($message, $code)`,
+  which PHPStan now checks.
 - `Configs::make()` resolved the base `Configs` class, which the container cannot build, so calling it on the
   base, or on a subclass that inherited it, threw `BindingResolutionException` about an unresolvable
   `array $config`. It now resolves the class it is called on (`static::class`), and on the base class throws
