@@ -51,3 +51,11 @@ now put it first:
 A call passing no prefix, `null` or `''` is unchanged. If you passed a prefix and relied on it being dropped,
 stop passing it. `Str::orderNumber()` always used its prefix and is unchanged.
 
+### `setPrefix()` takes `?string`
+
+`ConfigsInterface::setPrefix()` took `string` and `Configs::setPrefix()` took `mixed`; both take `?string` now.
+
+- If you implement `ConfigsInterface` yourself, change your `setPrefix(string $prefix)` to
+  `setPrefix(?string $prefix)`, or PHP refuses to load the class.
+- If you call `setPrefix()` with an `int` or another non-string from a file declaring `strict_types=1`, cast
+  it to a string first. A numeric `prefix` in the config file still works.

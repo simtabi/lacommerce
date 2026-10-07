@@ -42,6 +42,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   leading segment: `Str::sku('laravel', '-', 'pfx')` returned `LAR-8056449213` and now returns
   `PFX-LAR-8056449213`. Calls without a prefix, or with `null` or `''`, are unchanged.
 
+- `ConfigsInterface::setPrefix()` and `Configs::setPrefix()` both take `?string`. The interface took `string`,
+  refusing the `null` that `getPrefix()` returns, and the class took `mixed`. A class implementing
+  `ConfigsInterface` itself must widen its parameter to `?string`. Calling `Configs::setPrefix()` from a file with
+  `declare(strict_types=1)` with a non-string now throws a `TypeError` at the call; a numeric `prefix` in the
+  config file still works.
+
 ### Deprecated
 
 - The bare macros `Str::sku()`, `Str::orderNumber()` and `Str::ticketNumber()`. `Str`'s macro registry is one

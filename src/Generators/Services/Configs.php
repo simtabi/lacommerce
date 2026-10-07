@@ -125,10 +125,13 @@ class Configs implements ConfigsInterface
      * Set the prefix: a leading part of the generated value. Null or an empty string for none. For an
      * order number it replaces the default `ORD`.
      *
-     * @param mixed $prefix
+     * Declared `?string`, as ConfigsInterface declares it. It took `mixed` before; a scalar from a config
+     * file is still coerced to a string here, because this file does not declare strict types.
+     *
+     * @param ?string $prefix
      * @return $this
      */
-    public function setPrefix(mixed $prefix): self
+    public function setPrefix(?string $prefix): self
     {
         $this->prefix = $prefix;
 
