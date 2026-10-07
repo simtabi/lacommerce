@@ -35,6 +35,19 @@ Two things changed for a custom generator that already works:
 
 Each generator block takes a new `prefix` key. A config published before this release does not have it, which
 is the same as `null`: values are generated exactly as before. Add it to the block to prefix the values.
-`Identifiers::sku()` and `Identifiers::ticketNumber()` take the prefix as an optional third argument. The `Str`
-macros still ignore their `$prefix` argument for SKUs and ticket numbers, as 0.1.0 did.
+`Identifiers::sku()` and `Identifiers::ticketNumber()` take the prefix as an optional third argument.
+
+### The `Str` macros honour `$prefix` for SKUs and ticket numbers
+
+**This changes output.** In 0.1.0, `Str::sku()` and `Str::ticketNumber()` accepted a third `$prefix` argument
+and dropped it. They, and the scoped `Str::simtabiLacommerceSku()` and `Str::simtabiLacommerceTicketNumber()`,
+now put it first:
+
+| Call | 0.1.0 | Now |
+|------|-------|-----|
+| `Str::sku('laravel', '-', 'pfx')` | `LAR-8056449213` | `PFX-LAR-8056449213` |
+| `Str::ticketNumber('support', '-', 'hd')` | `SUP-8056449213` | `HD-SUP-8056449213` |
+
+A call passing no prefix, `null` or `''` is unchanged. If you passed a prefix and relied on it being dropped,
+stop passing it. `Str::orderNumber()` always used its prefix and is unchanged.
 

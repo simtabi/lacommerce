@@ -17,7 +17,8 @@ use Illuminate\Support\Str;
  *
  * The bare names shipped in 0.1.0 (`Str::sku()`, `Str::orderNumber()`, `Str::ticketNumber()`) are
  * still registered, unless `simtabi.lacommerce.register_legacy_macros` is false, and forward to the
- * scoped macro with the same arguments.
+ * scoped macro with the same arguments. A `$prefix` passed to the SKU or ticket-number macro leads the
+ * value (`PFX-LAR-8056449213`); 0.1.0 accepted it and dropped it.
  */
 final class StrMacros
 {
@@ -63,8 +64,8 @@ final class StrMacros
         self::$warned = [];
 
         Str::macro(self::SKU, static function (string $source, ?string $separator = null, ?string $prefix = null) use ($defaultSeparator): string {
-            // $prefix is accepted and ignored, as it was by the 0.1.0 Str::sku() this replaces.
-            return Identifiers::sku($source, $separator ?: $defaultSeparator);
+            // 0.1.0 accepted $prefix and dropped it; it leads the value again, as it did before 2022.
+            return Identifiers::sku($source, $separator ?: $defaultSeparator, $prefix);
         });
 
         Str::macro(self::ORDER_NUMBER, static function (?string $source, ?string $separator = null, ?string $prefix = null) use ($defaultSeparator): string {
@@ -73,8 +74,8 @@ final class StrMacros
         });
 
         Str::macro(self::TICKET_NUMBER, static function (string $source, ?string $separator = null, ?string $prefix = null) use ($defaultSeparator): string {
-            // $prefix is accepted and ignored, as it was by the 0.1.0 Str::ticketNumber() this replaces.
-            return Identifiers::ticketNumber($source, $separator ?: $defaultSeparator);
+            // 0.1.0 accepted $prefix and dropped it; it leads the value again, as it did before 2022.
+            return Identifiers::ticketNumber($source, $separator ?: $defaultSeparator, $prefix);
         });
 
         if ($registerLegacy) {

@@ -36,6 +36,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   `Illuminate\Http\Request`. It used to drop the code its one caller passed, leaving `0`, and type-hint the
   `Request` facade, which a real request never is.
 
+- The `sku` and `ticketNumber` `Str` macros, scoped and bare, pass their `$prefix` argument through to
+  `Identifiers`. 0.1.0 accepted it and dropped it, which commit `5a0461b` (2022) introduced when it moved the
+  bodies out of the macros; before that the prefix was honoured. A call that passed a prefix now gets it as the
+  leading segment: `Str::sku('laravel', '-', 'pfx')` returned `LAR-8056449213` and now returns
+  `PFX-LAR-8056449213`. Calls without a prefix, or with `null` or `''`, are unchanged.
+
 ### Deprecated
 
 - The bare macros `Str::sku()`, `Str::orderNumber()` and `Str::ticketNumber()`. `Str`'s macro registry is one
