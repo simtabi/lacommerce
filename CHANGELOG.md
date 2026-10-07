@@ -52,6 +52,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   boot, so a `config()` change made at runtime, in a test or a tenant switch for example, applies to the next
   value generated. It was silently ignored before.
 
+- A custom generator naming its own `Str` macro as `$strMixin` has that macro called with the configured prefix
+  as a third argument: `Str::yourMacro($source, $separator, $prefix)`, `$prefix` being `null` when none is
+  configured. It got only the source and separator, so a configured prefix never reached it. A macro declaring
+  two parameters ignores the extra argument; one whose third parameter meant something else now receives the
+  prefix there.
+
 ### Deprecated
 
 - The bare macros `Str::sku()`, `Str::orderNumber()` and `Str::ticketNumber()`. `Str`'s macro registry is one

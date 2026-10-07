@@ -30,6 +30,9 @@ Two things changed for a custom generator that already works:
   returned something other than `render()` now has `render()` used.
 - A `generator` key naming a class that does not implement `GeneratorInterface` throws
   `InvalidOptionException` naming the key, instead of a `TypeError`.
+- A generator naming its own `Str` macro as `$strMixin` has it called as `($source, $separator, $prefix)`, with
+  the configured prefix or `null`. It was called with two arguments. Check the macro's third parameter, if it
+  has one.
 
 ### Prefixes
 

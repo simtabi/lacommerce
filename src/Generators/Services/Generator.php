@@ -117,7 +117,8 @@ class Generator implements Jsonable, Renderable, GeneratorInterface
      * The three shipped generators call Identifiers directly rather than the `Str` macro named by
      * `$strMixin`: Str's macro registry is a flat, host-owned map, so going through it let any package
      * or application that registered its own `Str::sku()` replace what every model generated. A
-     * subclass naming any other `$strMixin` still has that macro called, as before.
+     * subclass naming any other `$strMixin` still has that macro called, as before, with the configured
+     * prefix (or null) as a third argument, the order the package's own macros take.
      *
      * An empty separator falls back to the configured default, as the 0.1.0 macros did. The configured
      * prefix, when there is one, leads the value; for an order number it replaces `ORD`.
@@ -139,7 +140,7 @@ class Generator implements Jsonable, Renderable, GeneratorInterface
             'sku'          => Identifiers::sku($source, $separator, $prefix),
             'orderNumber'  => Identifiers::orderNumber($prefix, $separator),
             'ticketNumber' => Identifiers::ticketNumber($source, $separator, $prefix),
-            default        => Str::{$this->strMixin}($source, $separator),
+            default        => Str::{$this->strMixin}($source, $separator, $prefix),
         };
     }
 
