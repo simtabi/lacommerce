@@ -7,6 +7,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Changed
+
+- **A guard now keeps literal credentials out of the tests**, and every generated credential's
+  purpose a single word. `tests/Architecture/NoLiteralCredentialsTest.php` is a local copy of
+  `laranail/package-tools` v0.1.10's `CredentialLiterals` rules, not a dependency, so this
+  package stays independent of laranail.
+
 ## [0.2.0] - 2026-10-13
 
 ### Added
