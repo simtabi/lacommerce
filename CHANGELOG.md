@@ -9,6 +9,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Changed
 
+- The local copy of package-tools' credential scanner now declares itself (`@credential-guard-copy
+  reason=outside-laranail mirrors=0.1.10`), so package-tools' scheduled
+  `verify-credential-guard-copies.py` can fail it when the rules move on or the reason stops
+  holding.
 - **A guard now keeps literal credentials out of the tests**, and every generated credential's
   purpose a single word. `tests/Architecture/NoLiteralCredentialsTest.php` is a local copy of
   `laranail/package-tools` v0.1.10's `CredentialLiterals` rules, not a dependency, so this

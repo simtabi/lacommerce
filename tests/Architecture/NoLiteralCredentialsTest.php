@@ -27,6 +27,8 @@ use SplFileInfo;
  *
  * Mark a deliberate fixed value on its line, or the line above, with
  * `// @credential-literal-exempt: <reason>`.
+ *
+ * @credential-guard-copy reason=outside-laranail mirrors=0.1.10
  */
 final class NoLiteralCredentialsTest extends TestCase
 {
