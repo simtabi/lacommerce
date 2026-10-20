@@ -7,6 +7,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [0.2.1] - 2026-10-20
+
 ### Changed
 
 - The local copy of package-tools' credential scanner now declares itself (`@credential-guard-copy
@@ -140,6 +142,7 @@ cut for it and the package was never published.
 - View, translation and asset loaders and publish tags pointed at directories the package does not ship;
   they are now registered only when the directory exists.
 
-[Unreleased]: https://github.com/simtabi/lacommerce/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/simtabi/lacommerce/compare/v0.2.1...HEAD
+[0.2.1]: https://github.com/simtabi/lacommerce/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/simtabi/lacommerce/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/simtabi/lacommerce/releases/tag/v0.1.0
