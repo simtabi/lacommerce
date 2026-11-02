@@ -7,6 +7,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Changed
+
+- `CODE_OF_CONDUCT.md` is the three-line pointer to the org code of conduct; the full Contributor Covenant copy it replaces is the org file it points to.
+
 ## [0.2.1] - 2026-10-20
 
 ### Changed
